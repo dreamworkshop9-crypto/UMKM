@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model {
     use HasFactory;
-    protected $fillable = ['user_id','invoice','name','phone','address','city','postal_code','payment_method','total','status','notes','tracking_number'];
+    protected $fillable = ['customer_name', 'user_id','invoice','name','phone','address','city','postal_code','payment_method','total','status','notes','tracking_number'];
     public function user()  { return $this->belongsTo(User::class); }
     public function items() { return $this->hasMany(OrderItem::class); }
     public function getTotalFormattedAttribute()  { return 'Rp'.number_format($this->total,0,',','.'); }

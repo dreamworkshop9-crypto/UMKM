@@ -1,4 +1,4 @@
-@extends('pesanan.base')
+@extends('admin.pesanan.base')
 
 @section('title', 'Pesanan Masuk - SALZA')
 @section('page-title', 'Pesanan Masuk')

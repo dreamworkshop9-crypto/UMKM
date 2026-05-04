@@ -15,10 +15,31 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/login', [AuthController::class, 'prosesLogin']);
-Route::get('/daftar', [AuthController::class, 'daftar'])->name('daftar');
-Route::post('/daftar', [AuthController::class, 'prosesDaftar']);
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::get('/daftar', [AuthController::class, 'showRegister'])->name('daftar');
+Route::post('/daftar', [AuthController::class, 'register']);
+
+// Public Storefront Routes
+Route::get('/shop', [App\Http\Controllers\ProductController::class, 'index'])->name('shop');
+Route::get('/product/{id}/{slug}', [App\Http\Controllers\ProductController::class, 'show'])->name('product.show');
+Route::get('/home', function() { return redirect('/shop'); })->name('home');
+
+Route::middleware('auth')->group(function() {
+    Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/remove', [App\Http\Controllers\CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [App\Http\Controllers\CartController::class, 'clear'])->name('cart.clear');
+
+    Route::get('/wishlist', [App\Http\Controllers\WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle', [App\Http\Controllers\WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+    Route::get('/order', [App\Http\Controllers\OrderController::class, 'index'])->name('order.index');
+    Route::post('/order/checkout', [App\Http\Controllers\OrderController::class, 'checkout'])->name('order.checkout');
+    Route::get('/order/{invoice}', [App\Http\Controllers\OrderController::class, 'show'])->name('order.show');
+});
+Route::post('/order/track', [App\Http\Controllers\OrderController::class, 'track'])->name('order.track');
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::redirect('/', '/admin/dashboard');
@@ -91,10 +112,43 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
 Route::middleware('auth')->prefix('pelanggan')->name('pelanggan.')->group(function () {
     Route::get('/dashboard', [PelangganDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/pesanan', [PelangganDashboardController::class, 'pesananSaya'])->name('pelanggan.pesanan');
-    Route::get('/ulasan', [PelangganDashboardController::class, 'ulasanSaya'])->name('pelanggan.ulasan');
-    Route::get('/profil', [PelangganDashboardController::class, 'profil'])->name('pelanggan.profil');
-    Route::get('/alamat', [PelangganDashboardController::class, 'alamat'])->name('pelanggan.alamat');
+    Route::get('/pesanan', [PelangganDashboardController::class, 'pesananSaya'])->name('pesanan');
+    Route::get('/ulasan', [PelangganDashboardController::class, 'ulasanSaya'])->name('ulasan');
+    Route::get('/profil', [PelangganDashboardController::class, 'profil'])->name('profil');
+    Route::get('/alamat', [PelangganDashboardController::class, 'alamat'])->name('alamat');
+});
+
+Route::post('/api/simulasi-pesanan', function () {
+    $produks = \App\Models\Produk::inRandomOrder()->take(rand(1,3))->get();
+    $items = [];
+    $total = 0;
+    foreach ($produks as $p) {
+        $qty = rand(1, 2);
+        $items[] = [
+            'name'  => $p->nama ?? $p->name ?? 'Produk',
+            'price' => $p->harga ?? $p->price ?? 100000,
+            'qty'   => $qty,
+            'image' => $p->gambar ?? $p->image ?? null,
+        ];
+        $total += ($p->harga ?? $p->price ?? 100000) * $qty;
+    }
+    $names = ['Andi Wijaya','Maya Sari','Doni Prasetyo','Lina Kusuma','Hendra Saputra','Rina Wati','Joko Susilo'];
+    $code = 'ORD-' . str_pad(\App\Models\Pesanan::count() + 1, 5, '0', STR_PAD_LEFT);
+    $pesanan = \App\Models\Pesanan::create([
+        'code'           => $code,
+        'customer_name'  => $names[array_rand($names)],
+        'customer_phone' => '08' . rand(1000000000, 9999999999),
+        'items'          => $items,
+        'total_price'    => $total,
+        'status'         => 'masuk',
+        'notes'          => null,
+    ]);
+    return response()->json([
+        'message' => 'Pesanan baru masuk!',
+        'code'    => $pesanan->code,
+        'total'   => $pesanan->formatted_price,
+        'items'   => $pesanan->item_count,
+    ]);
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

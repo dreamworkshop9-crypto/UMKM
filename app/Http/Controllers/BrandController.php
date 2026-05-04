@@ -11,7 +11,7 @@ class BrandController extends Controller
 {
     public function index()
     {
-        return view('brands.index');
+        return view('admin.brands.index');
     }
 
     public function list(Request $request)

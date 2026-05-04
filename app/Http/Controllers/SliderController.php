@@ -10,7 +10,7 @@ class SliderController extends Controller
 {
     public function index()
     {
-        return view('slider.index');
+        return view('admin.slider.index');
     }
 
     public function list(Request $request)

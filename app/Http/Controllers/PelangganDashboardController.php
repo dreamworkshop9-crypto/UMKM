@@ -6,10 +6,7 @@ use Illuminate\Http\Request;
 
 class PelangganDashboardController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+
 
     private function cekRole()
     {
@@ -27,24 +24,24 @@ class PelangganDashboardController extends Controller
     public function pesananSaya()
     {
         $this->cekRole();
-        return view('pages.placeholder', ['title' => 'Pesanan Saya']);
+        return view('pelanggan.pesanan');
     }
 
     public function ulasanSaya()
     {
         $this->cekRole();
-        return view('pages.placeholder', ['title' => 'Ulasan Saya']);
+        return view('pelanggan.ulasan');
     }
 
     public function profil()
     {
         $this->cekRole();
-        return view('pages.placeholder', ['title' => 'Profil']);
+        return view('pelanggan.profil');
     }
 
     public function alamat()
     {
         $this->cekRole();
-        return view('pages.placeholder', ['title' => 'Alamat']);
+        return view('pelanggan.alamat');
     }
 }

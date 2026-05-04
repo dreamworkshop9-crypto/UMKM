@@ -9,13 +9,13 @@ class PesananController extends Controller
 {
     public function masuk()
     {
-        return view('pesanan.masuk');
+        return view('admin.pesanan.masuk');
     }
 
     public function konfirmasi($id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        return view('pesanan.konfirmasi', compact('pesanan'));
+        return view('admin.pesanan.konfirmasi', compact('pesanan'));
     }
 
     public function doKonfirmasi(Request $request, $id)
@@ -28,7 +28,7 @@ class PesananController extends Controller
     public function dalamPerjalanan($id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        return view('pesanan.dalam_perjalanan', compact('pesanan'));
+        return view('admin.pesanan.dalam_perjalanan', compact('pesanan'));
     }
 
     public function doDalamPerjalanan(Request $request, $id)
@@ -41,7 +41,7 @@ class PesananController extends Controller
     public function dikemas($id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        return view('pesanans.dikemas', compact('pesanan'));
+        return view('admin.pesanan.dikemas', compact('pesanan'));
     }
 
     public function doDikemas(Request $request, $id)
@@ -54,7 +54,7 @@ class PesananController extends Controller
     public function dikirim($id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        return view('pesanan.dikirim', compact('pesanan'));
+        return view('admin.pesanan.dikirim', compact('pesanan'));
     }
 
     public function doDikirim(Request $request, $id)
@@ -67,7 +67,7 @@ class PesananController extends Controller
     public function selesai($id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        return view('pesanan.selesai', compact('pesanan'));
+        return view('admin.pesanan.selesai', compact('pesanan'));
     }
 
     public function doSelesai(Request $request, $id)
@@ -80,7 +80,7 @@ class PesananController extends Controller
     public function dibatalkan($id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        return view('pesanan.dibatalkan', compact('pesanan'));
+        return view('admin.pesanan.dibatalkan', compact('pesanan'));
     }
 
     public function doDibatalkan(Request $request, $id)

@@ -11,7 +11,7 @@ class CartController extends Controller {
         return view('pages.cart', compact('cartItems','subtotal'));
     }
     public function add(Request $req) {
-        $req->validate(['product_id'=>'required|exists:products,id','quantity'=>'required|integer|min:1']);
+        $req->validate(['product_id'=>'required|exists:produks,id','quantity'=>'required|integer|min:1']);
         $cart = Cart::where('user_id',Auth::id())->where('product_id',$req->product_id)->where('size',$req->size)->where('color',$req->color)->first();
         if ($cart) { $cart->increment('quantity',$req->quantity); }
         else { Cart::create(['user_id'=>Auth::id(),'product_id'=>$req->product_id,'quantity'=>$req->quantity,'size'=>$req->size,'color'=>$req->color]); }

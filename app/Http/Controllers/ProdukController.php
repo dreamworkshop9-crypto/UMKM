@@ -13,12 +13,12 @@ class ProdukController extends Controller
 {
     public function index()
     {
-        return view('produk.index');
+        return view('admin.produk.index');
     }
 
     public function create()
     {
-        return view('produk.create');
+        return view('admin.produk.create');
     }
 
     public function list(Request $request)

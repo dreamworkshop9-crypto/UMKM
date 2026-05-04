@@ -176,8 +176,8 @@ document.getElementById('addForm').addEventListener('submit',async e=>{
     try{const fd=new FormData();fd.append('name',name);fd.append('price',price);fd.append('stock',document.getElementById('inputStock').value||0);
     fd.append('brand_id',document.getElementById('inputBrand').value);fd.append('kategori_id',kategori);fd.append('description',document.getElementById('inputDesc').value);
     selectedSizes.forEach(s=>fd.append('sizes[]',s));selectedColors.forEach(c=>fd.append('colors[]',c));fd.append('image',uploadedFile);
-    const r=await fetch(API.store,{method:'POST',headers:{'X-CSRF-TOKEN':'{{csrf_token() }}'},body:fd});
-    if(!r.ok){const err=await r.json();throw new Error(err.message||'Gagal menyimpan')}
+    const r=await fetch(API.store,{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':'{{csrf_token() }}'},body:fd});
+    if(!r.ok){const err=await r.json();throw new Error(err.message||err.errors?Object.values(err.errors)[0][0]:'Gagal menyimpan')}
     const d=await r.json();showToast(d.message);setTimeout(()=>{window.location.href='{{route("admin.produk")}}'},1000)}
     catch(err){showToast(err.message,'error')}finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-plus text-xs"></i>Simpan Produk'}
 });

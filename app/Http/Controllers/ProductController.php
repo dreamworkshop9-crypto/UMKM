@@ -21,7 +21,7 @@ class ProductController extends Controller {
     }
     public function show($id, $slug) {
         $product = Product::with(['category','brand','images','variants'])->where('is_active',true)->findOrFail($id);
-        $related = Product::with(['category','brand'])->where('is_active',true)->where('category_id',$product->category_id)->where('id','!=',$product->id)->take(4)->get();
+        $related = Product::with(['category','brand'])->where('is_active',true)->where('kategori_id',$product->kategori_id)->where('id','!=',$product->id)->take(4)->get();
         return view('pages.product-detail', compact('product','related'));
     }
     public function bySubcategory($id, $slug) {

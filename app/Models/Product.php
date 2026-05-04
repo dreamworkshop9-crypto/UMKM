@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Product extends Model {
     use HasFactory;
     protected $table = 'produks';
-    protected $fillable = ['name','slug','description','price','old_price','stock','thumbnail','sku','weight','category_id','subcategory_id','subsubcategory_id','brand_id','is_active','is_new','is_best_seller'];
+    protected $fillable = ['name','slug','description','price','old_price','stock','thumbnail','sku','weight','kategori_id','subcategory_id','subsubcategory_id','brand_id','is_active','is_new','is_best_seller'];
     protected $casts = ['is_active'=>'boolean','is_new'=>'boolean','is_best_seller'=>'boolean','price'=>'integer','old_price'=>'integer'];
  
-    public function category()   { return $this->belongsTo(Category::class); }
+    public function category()   { return $this->belongsTo(Category::class, 'kategori_id'); }
     public function brand()      { return $this->belongsTo(Brand::class); }
     public function images()     { return $this->hasMany(ProductImage::class); }
     public function variants()   { return $this->hasMany(ProductVariant::class); }
@@ -22,7 +22,8 @@ class Product extends Model {
         return round((($this->old_price - $this->price) / $this->old_price) * 100);
     }
     public function getThumbnailUrlAttribute() {
-        return $this->thumbnail ? asset('storage/'.$this->thumbnail) : 'https://via.placeholder.com/300x300?text=No+Image';
+        $path = $this->thumbnail ?: $this->image;
+        return $path ? asset('storage/'.$path) : 'https://via.placeholder.com/300x300?text=No+Image';
     }
     public function getPriceFormattedAttribute() { return 'Rp'.number_format($this->price,0,',','.'); }
     public function getOldPriceFormattedAttribute() { return $this->old_price ? 'Rp'.number_format($this->old_price,0,',','.') : null; }

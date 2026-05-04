@@ -11,12 +11,12 @@ return new class extends Migration {
                 $table->foreignId('parent_id')->nullable()->after('slug')->constrained('kategoris')->nullOnDelete();
             }
             if (!Schema::hasColumn('kategoris', 'is_active')) {
-                $table->boolean('is_active')->default(true)->after('image');
+                $table->boolean('is_active')->default(true);
             }
         });
         Schema::table('brands', function (Blueprint $table) {
             if (!Schema::hasColumn('brands', 'is_active')) {
-                $table->boolean('is_active')->default(true)->after('image');
+                $table->boolean('is_active')->default(true);
             }
         });
     }

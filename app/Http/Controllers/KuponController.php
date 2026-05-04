@@ -11,7 +11,7 @@ class KuponController extends Controller
 {
     public function index()
     {
-        return view('kupon.index');
+        return view('admin.kupon.index');
     }
 
     public function list(Request $request)

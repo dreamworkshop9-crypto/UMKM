@@ -242,7 +242,7 @@ document.getElementById('addBrandForm').addEventListener('submit',async e=>{
     if(!ok)return;
     const btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin text-xs"></i>Menyimpan...';
     try{const fd=new FormData();fd.append('name',name);fd.append('image',uploadedFile);
-    const res=await fetch(API.store,{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'},body:fd});
+    const res=await fetch(API.store,{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:fd});
     if(!res.ok)throw new Error('Gagal');const data=await res.json();showToast(data.message);
     document.getElementById('brandName').value='';document.getElementById('slugPreview').textContent='—';uploadedFile=null;document.getElementById('brandImage').value='';document.getElementById('uploadPlaceholder').classList.remove('hidden');document.getElementById('uploadPreview').classList.add('hidden');
     currentPage=Math.ceil((brands.length+1)/PER_PAGE);await fetchBrands();}catch(err){showToast(err.message,'error');}finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-plus text-xs"></i>Tambah';}
@@ -257,7 +257,7 @@ document.getElementById('editBrandImage').addEventListener('change',e=>{if(e.tar
 document.getElementById('editBrandForm').addEventListener('submit',async e=>{
     e.preventDefault();const id=parseInt(document.getElementById('editBrandId').value);const name=document.getElementById('editBrandName').value.trim();if(!name)return;
     try{const fd=new FormData();fd.append('name',name);fd.append('_method','PUT');if(editUploadedFile)fd.append('image',editUploadedFile);
-    const res=await fetch(API.update(id),{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'},body:fd});
+    const res=await fetch(API.update(id),{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:fd});
     if(!res.ok)throw new Error('Gagal');const data=await res.json();closeEditModal();showToast(data.message);await fetchBrands();}catch(err){showToast(err.message,'error');}
 });
 

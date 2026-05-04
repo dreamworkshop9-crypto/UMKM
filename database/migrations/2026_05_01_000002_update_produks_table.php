@@ -11,7 +11,7 @@ return new class extends Migration {
                 $table->unsignedBigInteger('old_price')->nullable()->after('price');
             }
             if (!Schema::hasColumn('produks', 'thumbnail')) {
-                $table->string('thumbnail')->nullable()->after('old_price');
+                $table->string('thumbnail')->nullable()->after('price');
             }
             if (!Schema::hasColumn('produks', 'sku')) {
                 $table->string('sku')->nullable()->unique()->after('thumbnail');
@@ -20,7 +20,7 @@ return new class extends Migration {
                 $table->unsignedInteger('weight')->nullable()->after('sku');
             }
             if (!Schema::hasColumn('produks', 'subcategory_id')) {
-                $table->unsignedBigInteger('subcategory_id')->nullable()->after('category_id');
+                $table->unsignedBigInteger('subcategory_id')->nullable()->after('kategori_id');
             }
             if (!Schema::hasColumn('produks', 'subsubcategory_id')) {
                 $table->unsignedBigInteger('subsubcategory_id')->nullable()->after('subcategory_id');

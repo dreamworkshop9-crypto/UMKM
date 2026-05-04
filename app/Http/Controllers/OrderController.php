@@ -1,6 +1,6 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\{Order,OrderItem,Cart};
+use App\Models\{Order,OrderItem,Cart,Pesanan};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth,DB};
 use Illuminate\Support\Str;
@@ -14,8 +14,10 @@ class OrderController extends Controller {
         $req->validate(['name'=>'required','phone'=>'required','address'=>'required','city'=>'required','postal_code'=>'required','payment_method'=>'required|in:cod,transfer']);
         $items = Cart::with('product')->where('user_id',Auth::id())->get();
         if ($items->isEmpty()) return back()->with('error','Keranjang kosong.');
-        DB::transaction(function() use($req,$items) {
-            $order = Order::create(['user_id'=>Auth::id(),'invoice'=>'INV-'.strtoupper(Str::random(10)),'name'=>$req->name,'phone'=>$req->phone,'address'=>$req->address,'city'=>$req->city,'postal_code'=>$req->postal_code,'payment_method'=>$req->payment_method,'total'=>$items->sum(fn($i)=>$i->product->price*$i->quantity),'status'=>'pending']);
+        $order = null;
+        DB::transaction(function() use($req,$items, &$order) {
+            $order = Order::create([
+            'customer_name' => Auth::user()->name ?? 'Tamu','user_id'=>Auth::id(),'invoice'=>'INV-'.strtoupper(Str::random(10)),'name'=>$req->name,'phone'=>$req->phone,'address'=>$req->address,'city'=>$req->city,'postal_code'=>$req->postal_code,'payment_method'=>$req->payment_method,'total'=>$items->sum(fn($i)=>$i->product->price*$i->quantity),'status'=>'pending']);
             foreach($items as $i) OrderItem::create(['order_id'=>$order->id,'product_id'=>$i->product_id,'quantity'=>$i->quantity,'price'=>$i->product->price,'size'=>$i->size,'color'=>$i->color]);
             Cart::where('user_id',Auth::id())->delete();
         });
