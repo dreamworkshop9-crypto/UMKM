@@ -1,277 +1,119 @@
 @extends('layouts.admin')
 
-@section('title', 'Data Merek - SALZA')
-
-@section('page-title', 'Data Merek')
+@section('title', 'Data Merek')
 
 @section('content')
-<div class="flex gap-6 items-start">
-    <!-- Tabel -->
-    <div class="flex-1">
-        <div class="bg-dashboard-card rounded-xl border border-slate-700/30 overflow-hidden">
-            <div class="p-6 border-b border-slate-700/50 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-white">Data Merek</h2>
-                <p class="text-sm text-slate-500">Total <span id="brandCount" class="text-purple-400 font-semibold">0</span> merek</p>
+<div class="max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+
+    <!-- Tabel Kiri -->
+    <section class="flex-1 bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 shadow-xl overflow-hidden flex flex-col min-h-0">
+        <div class="px-6 py-5 border-b border-outline-variant/10 flex items-center gap-3 flex-shrink-0">
+            <h2 class="text-[16px] font-semibold text-white">Data Merek</h2>
+            <span class="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[24px] h-[24px] flex items-center justify-center" id="brand-count">0</span>
+        </div>
+
+        <div class="px-6 py-4 border-b border-outline-variant/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0">
+            <div class="flex items-center gap-2 text-slate-400 text-[13px]">
+                <span>Show</span>
+                <select class="bg-[#121220] border border-outline-variant/30 rounded-md px-3 py-1.5 text-white focus:ring-1 focus:ring-indigo-500 outline-none text-[13px]">
+                    <option>10</option><option>25</option><option>50</option>
+                </select>
+                <span>entries</span>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="bg-slate-700/20 text-slate-400 uppercase text-[11px] font-bold tracking-widest">
-                            <th class="px-6 py-3 w-14">No</th>
-                            <th class="px-6 py-3">Merek</th>
-                            <th class="px-6 py-3">Slug</th>
-                            <th class="px-6 py-3 w-24 text-center">Gambar</th>
-                            <th class="px-6 py-3 w-28 text-center">Opsi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="brandTableBody" class="divide-y divide-slate-700/50">
-                        <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">
-                            <i class="fa-solid fa-spinner fa-spin text-xl mb-2"></i>
-                            <p class="text-sm">Memuat data...</p>
-                        </td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="px-6 py-3 border-t border-slate-700/50 flex items-center justify-between">
-                <p class="text-xs text-slate-500">Menampilkan <span id="showingCount" class="text-slate-300 font-semibold">0</span> data</p>
-                <div class="flex items-center gap-1" id="pagination"></div>
+            <div class="flex items-center gap-3">
+                <span class="text-slate-400 text-[13px]">Search:</span>
+                <input class="bg-[#121220] border border-outline-variant/30 rounded-md px-4 py-1.5 text-white focus:ring-1 focus:ring-indigo-500 outline-none w-[200px] text-[13px] placeholder-slate-600" type="text" placeholder="Cari merek..." id="search-brand"/>
             </div>
         </div>
-    </div>
 
-    <!-- Form Tambah -->
-    <div class="w-96 flex-shrink-0">
-        <div class="bg-dashboard-card rounded-xl border border-slate-700/30 overflow-hidden sticky top-20">
-            <div class="p-6 border-b border-slate-700/50 flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <i class="fa-solid fa-plus text-purple-400 text-xs"></i>
+        <div class="overflow-x-auto flex-1 min-h-0">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-[#24243a] border-b border-outline-variant/30">
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">No</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Merek</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Slug</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Gambar</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Opsi</th>
+                    </tr>
+                </thead>
+                <tbody id="brand-tbody">
+                    <tr>
+                        <td class="px-6 py-12 text-center text-slate-500 text-[13px]" colspan="5">
+                            <div class="flex flex-col items-center gap-2 py-8">
+                                <span class="material-symbols-outlined text-[48px] opacity-10 animate-pulse">progress_activity</span>
+                                <span>Memuat data...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Form Kanan - FULL HEIGHT -->
+    <aside class="w-full lg:w-[380px] flex-shrink-0 lg:self-stretch">
+        <div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 shadow-xl p-6 h-full flex flex-col">
+            <h2 class="text-[16px] font-semibold text-white mb-6 flex items-center gap-2 flex-shrink-0">
+                <span class="material-symbols-outlined text-[18px] text-indigo-400">add_circle</span>
+                Tambah Merek
+            </h2>
+            <form id="brand-form" class="space-y-5 flex-1 flex flex-col">
+                @csrf
+                <input type="hidden" id="edit-id" value=""/>
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold" for="brand-name">Nama Merek <span class="text-red-400">*</span></label>
+                    <input class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]" id="brand-name" placeholder="Masukkan nama merek" required type="text"/>
                 </div>
-                <h3 class="text-sm font-bold text-white">Tambah Merek</h3>
-            </div>
-            <form id="addBrandForm" class="p-6 space-y-4" novalidate>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Merek <span class="text-red-400">*</span></label>
-                    <input type="text" id="brandName" placeholder="Nama merek" class="w-full px-4 py-2.5 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" required>
-                    <p id="nameError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Nama merek wajib diisi</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Gambar <span class="text-red-400">*</span></label>
-                    <div id="uploadZone" class="border-2 border-dashed border-slate-700/50 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 hover:bg-slate-800/50 transition-colors min-h-[120px]">
-                        <div id="uploadPlaceholder" class="text-center">
-                            <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg mb-1"></i>
-                            <p class="text-xs font-medium text-slate-400">Klik atau seret gambar</p>
-                            <p class="text-[10px] text-slate-600 mt-0.5">PNG, JPG, SVG (Maks. 2MB)</p>
-                        </div>
-                        <div id="uploadPreview" class="hidden w-full text-center">
-                            <img id="previewImg" src="" alt="Preview" class="w-14 h-14 rounded-lg object-contain mx-auto mb-1.5 bg-slate-800 border border-slate-700/50 p-0.5">
-                            <p id="fileName" class="text-xs font-medium text-slate-300 truncate px-4"></p>
-                            <button type="button" id="removeFile" class="text-[11px] text-red-400 font-semibold hover:text-red-300 mt-1"><i class="fa-solid fa-trash-can mr-0.5"></i>Hapus</button>
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold" for="brand-image">Gambar <span id="image-required-star" class="text-red-400">*</span></label>
+                    <div class="relative flex items-center bg-[#121220] border border-outline-variant/30 rounded-lg overflow-hidden">
+                        <label class="cursor-pointer bg-[#2a2a40] text-slate-300 px-4 py-3 text-[12px] font-medium hover:bg-[#333350] transition-colors border-r border-outline-variant/30" for="brand-image">Telusuri...</label>
+                        <span class="px-4 text-slate-500 text-[12px] truncate flex-1" id="file-name-display">Tidak ada berkas dipilih</span>
+                        <input accept="image/*" class="hidden" id="brand-image" type="file"/>
+                    </div>
+                    <div id="image-preview" class="hidden mt-3">
+                        <div class="bg-white p-2 rounded-lg w-20 h-16 flex items-center justify-center overflow-hidden border border-outline-variant/20">
+                            <img id="preview-img" class="object-contain max-h-full" src="" alt="Preview"/>
                         </div>
                     </div>
-                    <input type="file" id="brandImage" accept="image/*" class="hidden">
-                    <p id="imageError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Gambar wajib diunggah</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Slug Preview</label>
-                    <div class="w-full px-4 py-2.5 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-slate-500 truncate">
-                        <span id="slugPreview" class="text-slate-400">—</span>
-                    </div>
+                <div class="flex gap-2 mt-auto pt-6">
+                    <button id="cancel-edit" class="hidden flex-1 bg-[#2a2a40] hover:bg-[#333350] text-slate-300 text-[13px] font-semibold py-3 rounded-lg transition-colors" type="button">Batal</button>
+                    <button id="submit-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[13px] font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-indigo-500/20 active:scale-[0.98] flex items-center justify-center gap-2" type="submit">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        <span id="submit-text">Tambah</span>
+                    </button>
                 </div>
-                <button type="submit" id="submitBtn" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg shadow-md shadow-purple-500/20 transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus text-xs"></i>Tambah
-                </button>
             </form>
         </div>
-    </div>
-</div>
+    </aside>
 
-<!-- Modal Edit -->
-<div id="editModal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="editOverlay"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-slate-800 rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
-            <h3 class="text-sm font-bold text-white">Edit Merek</h3>
-            <button id="closeEditBtn" class="w-8 h-8 rounded-lg hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <form id="editBrandForm" class="p-6 space-y-4" novalidate>
-            <input type="hidden" id="editBrandId">
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Merek <span class="text-red-400">*</span></label>
-                <input type="text" id="editBrandName" class="w-full px-4 py-2.5 text-sm bg-slate-900 border border-slate-700/50 rounded-lg text-white focus:border-purple-500 outline-none" required>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Gambar Saat Ini</label>
-                <img id="editCurrentImg" src="" alt="Gambar" class="w-14 h-14 rounded-lg object-contain bg-slate-900 border border-slate-700/50 p-0.5">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Ganti Gambar (Opsional)</label>
-                <div id="editUploadZone" class="border-2 border-dashed border-slate-700/50 rounded-lg p-3 flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 transition-colors">
-                    <p class="text-xs text-slate-500"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Klik untuk ganti</p>
-                </div>
-                <input type="file" id="editBrandImage" accept="image/*" class="hidden">
-            </div>
-            <div class="flex gap-3">
-                <button type="button" id="cancelEditBtn" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-semibold rounded-lg transition-colors">Batal</button>
-                <button type="submit" class="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition-all">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Hapus -->
-<div id="deleteModal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="deleteOverlay"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-slate-800 rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden">
-        <div class="p-6 text-center">
-            <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-triangle-exclamation text-red-500 text-xl"></i></div>
-            <h3 class="text-base font-bold text-white mb-1">Hapus Merek?</h3>
-            <p class="text-sm text-slate-400">Merek <strong id="deleteBrandName" class="text-slate-300"></strong> akan dihapus permanen.</p>
-        </div>
-        <div class="px-6 pb-6 flex gap-3">
-            <button id="cancelDeleteBtn" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-semibold rounded-lg transition-colors">Batal</button>
-            <button id="confirmDeleteBtn" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-all">Hapus</button>
-        </div>
-    </div>
 </div>
 @endsection
 
-@section('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-.row-hover { transition: background .15s, box-shadow .15s; }
-.row-hover:hover { background: rgba(139,92,246,0.08); box-shadow: inset 3px 0 0 #a855f7; }
-.upload-zone { transition: all .2s; }
-.upload-zone:hover, .upload-zone.drag-over { border-color: #a855f7 !important; background: rgba(139,92,246,0.05) !important; }
-@keyframes toastIn { from{opacity:0;transform:translateX(100%)} to{opacity:1;transform:translateX(0)} }
-@keyframes toastOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(100%)} }
-.toast-in { animation: toastIn .3s ease forwards; }
-.toast-out { animation: toastOut .25s ease forwards; }
-</style>
-@endsection
-
-@section('scripts')
+@section('additional-js')
 <script>
-const API = {
-    list:   '{{ route("admin.brands.list") }}',
-    store:  '{{ route("admin.brands.store") }}',
-    show:   id => `{{ route("admin.brands.show", "ID") }}`.replace('ID', id),
-    update: id => `{{ route("admin.brands.update", "ID") }}`.replace('ID', id),
-    delete: id => `{{ route("admin.brands.destroy", "ID") }}`.replace('ID', id),
-};
+const brandTbody=document.getElementById('brand-tbody'),brandCount=document.getElementById('brand-count'),brandForm=document.getElementById('brand-form'),fileInput=document.getElementById('brand-image'),fileNameDisplay=document.getElementById('file-name-display'),imagePreview=document.getElementById('image-preview'),previewImg=document.getElementById('preview-img'),editIdField=document.getElementById('edit-id'),cancelBtn=document.getElementById('cancel-edit'),submitBtn=document.getElementById('submit-btn'),submitText=document.getElementById('submit-text'),imageRequiredStar=document.getElementById('image-required-star');
 
-let brands = [], currentPage = 1, PER_PAGE = 5, uploadedFile = null, editUploadedFile = null, deleteTargetId = null;
+function loadBrands(s=''){fetch('{{route("admin.brands.list")}}'+(s?'?search='+s:'')).then(r=>r.json()).then(d=>{brandCount.textContent=d.length;if(!d.length){brandTbody.innerHTML='<tr><td class="px-6 py-12 text-center text-slate-500 text-[13px]" colspan="5"><div class="flex flex-col items-center gap-2 py-8"><span class="material-symbols-outlined text-[48px] opacity-10">category</span><span>Tidak ada data merek</span></div></td></tr>';return}brandTbody.innerHTML=d.map((b,i)=>'<tr class="border-b border-outline-variant/5 hover:bg-[#1a1a2e] transition-colors"><td class="px-6 py-4 text-[13px] text-slate-400">'+(i+1)+'</td><td class="px-6 py-4 text-[13px] text-white font-medium">'+b.name+'</td><td class="px-6 py-4 text-[13px] text-slate-400">'+b.slug+'</td><td class="px-6 py-4">'+(b.image_url?'<div class="bg-white p-1 rounded w-14 h-10 flex items-center justify-center overflow-hidden"><img alt="'+b.name+'" class="object-contain max-h-full" src="'+b.image_url+'"/></div>':'<span class="text-[12px] text-slate-600">Tidak ada</span>')+'</td><td class="px-6 py-4"><div class="flex gap-2"><button onclick="editBrand('+b.id+',\''+b.name.replace(/'/g,"\\'")+'\')" class="p-2 rounded-lg bg-purple-500/10 text-purple-400 hover:text-white hover:bg-purple-500/20 transition-all" title="Edit"><span class="material-symbols-outlined text-[16px]">edit</span></button><button onclick="deleteBrand('+b.id+',\''+b.name.replace(/'/g,"\\'")+'\')" class="p-2 rounded-lg bg-red-500/10 text-red-400 hover:text-white hover:bg-red-500/20 transition-all" title="Hapus"><span class="material-symbols-outlined text-[16px]">delete</span></button></div></td></tr>').join(')}).catch(()=>{brandTbody.innerHTML='<tr><td class="px-6 py-12 text-center text-red-400 text-[13px]" colspan="5"><span class="material-symbols-outlined text-[36px] block mb-2">wifi_off</span>Gagal memuat data</td></tr>'})}
 
-function toSlug(t) { return t.toLowerCase().trim().replace(/[^\w\s-]/g,'').replace(/[\s_]+/g,'-').replace(/^-+|-+$/g,''); }
+let st;document.getElementById('search-brand').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>loadBrands(e.target.value),400)});
 
-function showToast(msg, type='success') {
-    const c = document.getElementById('toastContainer');
-    if (!c) { const tc = document.createElement('div'); tc.id='toastContainer'; tc.className='fixed top-6 right-6 z-[60] space-y-3 pointer-events-none'; document.body.appendChild(tc); }
-    const el = document.createElement('div');
-    const icons = { success:'fa-circle-check text-emerald-400', error:'fa-circle-xmark text-red-400', info:'fa-circle-info text-sky-400' };
-    el.className = 'toast-in pointer-events-auto flex items-center gap-3 px-5 py-3 bg-slate-800 rounded-xl border border-slate-700/50 shadow-lg min-w-[280px]';
-    el.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span class="text-sm font-semibold text-white flex-1">${msg}</span>`;
-    document.getElementById('toastContainer').appendChild(el);
-    setTimeout(() => { el.classList.replace('toast-in','toast-out'); setTimeout(()=>el.remove(),250); }, 3000);
-}
+fileInput.addEventListener('change',e=>{if(e.target.files.length>0){fileNameDisplay.textContent=e.target.files[0].name;fileNameDisplay.classList.remove('text-slate-500');fileNameDisplay.classList.add('text-slate-200');const r=new FileReader;r.onload=ev=>{previewImg.src=ev.target.result;imagePreview.classList.remove('hidden')};r.readAsDataURL(e.target.files[0])}else{fileNameDisplay.textContent='Tidak ada berkas dipilih';fileNameDisplay.classList.add('text-slate-500');fileNameDisplay.classList.remove('text-slate-200');imagePreview.classList.add('hidden')}});
 
-async function fetchBrands(search='') {
-    try {
-        const url = search ? `${API.list}?search=${encodeURIComponent(search)}` : API.list;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Gagal memuat');
-        brands = await res.json();
-        renderTable(search);
-    } catch(e) { showToast('Gagal memuat data','error'); }
-}
+brandForm.addEventListener('submit',async e=>{e.preventDefault();const isEdit=editIdField.value!=='';const bHTML=submitBtn.innerHTML;submitBtn.disabled=true;submitBtn.innerHTML='<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span> Menyimpan...';const fd=new FormData;fd.append('name',document.getElementById('brand-name').value);if(fileInput.files.length>0)fd.append('image',fileInput.files[0]);else if(!isEdit){showToast('Gambar wajib diupload','error');submitBtn.disabled=false;submitBtn.innerHTML=bHTML;return}const url=isEdit?'{{route("admin.brands.update",":id")}}'.replace(':id',editIdField.value):'{{route("admin.brands.store")}}';try{const res=await fetch(url,{method:isEdit?'PUT':'POST',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:fd});const data=await res.json();if(res.ok||res.status===201){showToast(data.message||(isEdit?'Merek diperbarui':'Merek ditambahkan'),'success');resetForm();loadBrands()}else showToast(data.message||'Gagal menyimpan','error')}catch{showToast('Terjadi kesalahan koneksi','error')}submitBtn.disabled=false;submitBtn.innerHTML=bHTML});
 
-function renderTable(filter='') {
-    const filtered = brands.filter(b => b.name.toLowerCase().includes(filter.toLowerCase()) || b.slug.toLowerCase().includes(filter.toLowerCase()));
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-    if (currentPage > totalPages) currentPage = totalPages;
-    const start = (currentPage-1)*PER_PAGE;
-    const pageData = filtered.slice(start, start+PER_PAGE);
-    const tbody = document.getElementById('brandTableBody');
-    tbody.innerHTML = '';
-    if (!pageData.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500 italic">Tidak ada data.</td></tr>';
-    } else {
-        pageData.forEach((b,i) => {
-            const img = b.image_url || 'https://picsum.photos/seed/fb'+b.id+'/80/80.jpg';
-            const tr = document.createElement('tr');
-            tr.className = 'row-hover';
-            tr.innerHTML = `<td class="px-6 py-3 text-sm text-slate-500">${start+i+1}</td><td class="px-6 py-3 text-sm font-semibold text-white">${b.name}</td><td class="px-6 py-3"><span class="inline-block px-2 py-0.5 bg-slate-800 border border-slate-700/50 rounded text-[11px] font-mono text-slate-400">${b.slug}</span></td><td class="px-6 py-3 text-center"><img src="${img}" alt="${b.name}" class="w-9 h-9 rounded-lg object-contain inline-block bg-slate-800 border border-slate-700/50 p-0.5"></td><td class="px-6 py-3 text-center"><div class="flex items-center justify-center gap-1"><button onclick="openEditModal(${b.id})" class="w-7 h-7 rounded bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center text-amber-400 hover:text-amber-300 transition-colors" title="Edit"><i class="fa-solid fa-pen text-[10px]"></i></button><button onclick="openDeleteModal(${b.id})" class="w-7 h-7 rounded bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-400 hover:text-red-300 transition-colors" title="Hapus"><i class="fa-solid fa-trash-can text-[10px]"></i></button></div></td>`;
-            tbody.appendChild(tr);
-        });
-    }
-    document.getElementById('brandCount').textContent = brands.length;
-    document.getElementById('showingCount').textContent = filtered.length;
-    const pag = document.getElementById('pagination');
-    pag.innerHTML = '';
-    if (totalPages > 1) {
-        const mk = (html,cls,fn) => { const b=document.createElement('button'); b.className=cls; b.innerHTML=html; b.onclick=fn; pag.appendChild(b); };
-        mk('<i class="fa-solid fa-chevron-left text-[10px]"></i>', 'w-7 h-7 rounded border border-slate-700/50 bg-slate-800 flex items-center justify-center text-xs '+(currentPage===1?'text-slate-600 pointer-events-none':'text-slate-400 hover:text-white'), ()=>{currentPage--;renderTable(filter);});
-        for(let p=1;p<=totalPages;p++) mk(p, p===currentPage?'w-7 h-7 rounded bg-purple-600 text-white flex items-center justify-center text-xs font-bold':'w-7 h-7 rounded border border-slate-700/50 bg-slate-800 flex items-center justify-center text-xs text-slate-400 hover:text-white', ()=>{currentPage=p;renderTable(filter);});
-        mk('<i class="fa-solid fa-chevron-right text-[10px]"></i>', 'w-7 h-7 rounded border border-slate-700/50 bg-slate-800 flex items-center justify-center text-xs '+(currentPage===totalPages?'text-slate-600 pointer-events-none':'text-slate-400 hover:text-white'), ()=>{currentPage++;renderTable(filter);});
-    }
-}
+function editBrand(id,name){editIdField.value=id;document.getElementById('brand-name').value=name;fileInput.removeAttribute('required');imageRequiredStar.classList.add('hidden');submitText.textContent='Simpan';cancelBtn.classList.remove('hidden');submitBtn.querySelector('.material-symbols-outlined').textContent='save';window.scrollTo({top:0,behavior:'smooth'})}
 
-const uz = document.getElementById('uploadZone');
-uz.addEventListener('click', e => { if(!e.target.closest('#removeFile')) document.getElementById('brandImage').click(); });
-uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
-uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
-uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
-document.getElementById('brandImage').addEventListener('change', e => { if(e.target.files.length) handleFile(e.target.files[0]); });
+function deleteBrand(id,name){if(!confirm('Yakin hapus merek "'+name+'"?'))return;fetch('{{route("admin.brands.destroy",":id")}}'.replace(':id',id),{method:'DELETE',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}}).then(r=>r.json()).then(d=>{if(d.message){showToast(d.message,'success');loadBrands()}else showToast('Gagal menghapus','error')}).catch(()=>showToast('Terjadi kesalahan','error'))}
 
-function handleFile(file) {
-    if(!file.type.startsWith('image/')){showToast('File harus gambar','error');return;}
-    if(file.size>2*1024*1024){showToast('Maks 2MB','error');return;}
-    uploadedFile=file;
-    const r=new FileReader();
-    r.onload=e=>{document.getElementById('previewImg').src=e.target.result;document.getElementById('fileName').textContent=file.name;document.getElementById('uploadPlaceholder').classList.add('hidden');document.getElementById('uploadPreview').classList.remove('hidden');};
-    r.readAsDataURL(file);
-    document.getElementById('imageError').classList.add('hidden');
-}
-document.getElementById('removeFile').addEventListener('click',e=>{e.stopPropagation();uploadedFile=null;document.getElementById('brandImage').value='';document.getElementById('uploadPlaceholder').classList.remove('hidden');document.getElementById('uploadPreview').classList.add('hidden');});
-document.getElementById('brandName').addEventListener('input',e=>{document.getElementById('slugPreview').textContent=toSlug(e.target.value)||'—';if(e.target.value.trim())document.getElementById('nameError').classList.add('hidden');});
+function resetForm(){brandForm.reset();editIdField.value='';fileNameDisplay.textContent='Tidak ada berkas dipilih';fileNameDisplay.classList.add('text-slate-500');fileNameDisplay.classList.remove('text-slate-200');imagePreview.classList.add('hidden');fileInput.setAttribute('required','');imageRequiredStar.classList.remove('hidden');submitText.textContent='Tambah';cancelBtn.classList.add('hidden');submitBtn.querySelector('.material-symbols-outlined').textContent='add'}
 
-document.getElementById('addBrandForm').addEventListener('submit',async e=>{
-    e.preventDefault();
-    const name=document.getElementById('brandName').value.trim();let ok=true;
-    if(!name){document.getElementById('nameError').classList.remove('hidden');ok=false;}
-    if(!uploadedFile){document.getElementById('imageError').classList.remove('hidden');ok=false;}
-    if(!ok)return;
-    const btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin text-xs"></i>Menyimpan...';
-    try{const fd=new FormData();fd.append('name',name);fd.append('image',uploadedFile);
-    const res=await fetch(API.store,{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:fd});
-    if(!res.ok)throw new Error('Gagal');const data=await res.json();showToast(data.message);
-    document.getElementById('brandName').value='';document.getElementById('slugPreview').textContent='—';uploadedFile=null;document.getElementById('brandImage').value='';document.getElementById('uploadPlaceholder').classList.remove('hidden');document.getElementById('uploadPreview').classList.add('hidden');
-    currentPage=Math.ceil((brands.length+1)/PER_PAGE);await fetchBrands();}catch(err){showToast(err.message,'error');}finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-plus text-xs"></i>Tambah';}
-});
+cancelBtn.addEventListener('click',resetForm);
 
-function openEditModal(id){const b=brands.find(x=>x.id===id);if(!b)return;document.getElementById('editBrandId').value=id;document.getElementById('editBrandName').value=b.name;document.getElementById('editCurrentImg').src=b.image_url||'https://picsum.photos/seed/fb'+id+'/80/80.jpg';editUploadedFile=null;document.getElementById('editBrandImage').value='';document.getElementById('editUploadZone').innerHTML='<p class="text-xs text-slate-500"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Klik untuk ganti</p>';document.getElementById('editModal').classList.remove('hidden');}
-function closeEditModal(){document.getElementById('editModal').classList.add('hidden');}
-document.getElementById('closeEditBtn').onclick=closeEditModal;document.getElementById('cancelEditBtn').onclick=closeEditModal;document.getElementById('editOverlay').onclick=closeEditModal;
-document.getElementById('editUploadZone').addEventListener('click',()=>document.getElementById('editBrandImage').click());
-document.getElementById('editBrandImage').addEventListener('change',e=>{if(e.target.files.length){editUploadedFile=e.target.files[0];document.getElementById('editUploadZone').innerHTML=`<p class="text-xs text-emerald-400"><i class="fa-solid fa-check-circle mr-1"></i>${editUploadedFile.name}</p>`;}});
+function showToast(m,t){const toast=document.createElement('div');toast.className='fixed top-6 right-6 z-[100] px-5 py-3 rounded-xl text-[13px] font-medium shadow-xl transition-all transform translate-x-full '+(t==='success'?'bg-emerald-600 text-white':'bg-red-600 text-white');toast.textContent=m;document.body.appendChild(toast);requestAnimationFrame(()=>{toast.classList.remove('translate-x-full');toast.classList.add('translate-x-0')});setTimeout(()=>{toast.classList.remove('translate-x-0');toast.classList.add('translate-x-full');setTimeout(()=>toast.remove(),300)},3000)}
 
-document.getElementById('editBrandForm').addEventListener('submit',async e=>{
-    e.preventDefault();const id=parseInt(document.getElementById('editBrandId').value);const name=document.getElementById('editBrandName').value.trim();if(!name)return;
-    try{const fd=new FormData();fd.append('name',name);fd.append('_method','PUT');if(editUploadedFile)fd.append('image',editUploadedFile);
-    const res=await fetch(API.update(id),{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},body:fd});
-    if(!res.ok)throw new Error('Gagal');const data=await res.json();closeEditModal();showToast(data.message);await fetchBrands();}catch(err){showToast(err.message,'error');}
-});
-
-function openDeleteModal(id){const b=brands.find(x=>x.id===id);if(!b)return;deleteTargetId=id;document.getElementById('deleteBrandName').textContent=b.name;document.getElementById('deleteModal').classList.remove('hidden');}
-function closeDeleteModal(){document.getElementById('deleteModal').classList.add('hidden');deleteTargetId=null;}
-document.getElementById('cancelDeleteBtn').onclick=closeDeleteModal;document.getElementById('deleteOverlay').onclick=closeDeleteModal;
-
-document.getElementById('confirmDeleteBtn').addEventListener('click',async()=>{
-    if(deleteTargetId===null)return;const btn=document.getElementById('confirmDeleteBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin text-xs"></i>';
-    try{const res=await fetch(API.delete(deleteTargetId),{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}','Content-Type':'application/json'},body:JSON.stringify({_method:'DELETE'})});
-    if(!res.ok)throw new Error('Gagal');const data=await res.json();closeDeleteModal();showToast(data.message,'info');await fetchBrands();}catch(err){showToast(err.message,'error');}finally{btn.disabled=false;btn.innerHTML='Hapus';}
-});
-
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEditModal();closeDeleteModal();}});
-document.addEventListener('DOMContentLoaded',()=>fetchBrands());
+loadBrands();
 </script>
 @endsection

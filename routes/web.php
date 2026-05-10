@@ -10,6 +10,10 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\KuponController;
 use App\Http\Controllers\PesananController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Front\FrontController;
+use App\Http\Controllers\Front\KeranjangController;
+use App\Http\Controllers\Front\CheckoutController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -45,14 +49,36 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::redirect('/', '/admin/dashboard');
     Route::redirect('/pesanan', '/admin/pesanan/masuk');
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/pesanan/masuk', [PesananController::class, 'masuk'])->name('pesanan.masuk');
-    Route::get('/pesanan/konfirmasi/{id}', [PesananController::class, 'konfirmasi'])->name('pesanan.konfirmasi');
-    Route::get('/pesanan/dalam-perjalanan/{id}', [PesananController::class, 'dalam_perjalanan'])->name('pesanan.dalam_perjalanan');
-    Route::get('/pesanan/dikemas/{id}', [PesananController::class, 'dikemas'])->name('pesanan.dikemas');
-    Route::get('/pesanan/dikirim/{id}', [PesananController::class, 'dikirim'])->name('pesanan.dikirim');
-    Route::get('/pesanan/selesai/{id}', [PesananController::class, 'selesai'])->name('pesanan.selesai');
-    Route::get('/pesanan/dibatalkan/{id}', [PesananController::class, 'dibatalkan'])->name('pesanan.dibatalkan');
 
+    // ============================================================
+    //  PESANAN — Halaman List (GET)
+    // ============================================================
+    Route::get('/pesanan/masuk',           [PesananController::class, 'masuk'])           ->name('pesanan.masuk');
+    Route::get('/pesanan/dikonfirmasi',    [PesananController::class, 'dikonfirmasi'])    ->name('pesanan.dikonfirmasi');
+    Route::get('/pesanan/dikemas',         [PesananController::class, 'dikemas'])         ->name('pesanan.dikemas');
+    Route::get('/pesanan/dikirim',         [PesananController::class, 'dikirim'])         ->name('pesanan.dikirim');
+    Route::get('/pesanan/diperjalanan',    [PesananController::class, 'diperjalanan'])    ->name('pesanan.diperjalanan');
+    Route::get('/pesanan/selesai',         [PesananController::class, 'selesai'])         ->name('pesanan.selesai');
+    Route::get('/pesanan/dibatalkan',      [PesananController::class, 'dibatalkan'])      ->name('pesanan.dibatalkan');
+
+    // ============================================================
+    //  PESANAN — Detail (GET)
+    // ============================================================
+    Route::get('/pesanan/{id}',            [PesananController::class, 'show'])            ->name('pesanan.show');
+
+    // ============================================================
+    //  PESANAN — Aksi Ubah Status (POST)
+    // ============================================================
+    Route::post('/pesanan/{id}/konfirmasi',     [PesananController::class, 'aksiKonfirmasi'])     ->name('pesanan.aksi.konfirmasi');
+    Route::post('/pesanan/{id}/dikemas',        [PesananController::class, 'aksiDikemas'])        ->name('pesanan.aksi.dikemas');
+    Route::post('/pesanan/{id}/dikirim',        [PesananController::class, 'aksiDikirim'])        ->name('pesanan.aksi.dikirim');
+    Route::post('/pesanan/{id}/diperjalanan',   [PesananController::class, 'aksiDiperjalanan'])   ->name('pesanan.aksi.diperjalanan');
+    Route::post('/pesanan/{id}/selesai',        [PesananController::class, 'aksiSelesai'])        ->name('pesanan.aksi.selesai');
+    Route::post('/pesanan/{id}/dibatalkan',     [PesananController::class, 'aksiDibatalkan'])     ->name('pesanan.aksi.dibatalkan');
+
+    // ============================================================
+    //  BRAND
+    // ============================================================
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
     Route::prefix('api/brands')->name('brands.')->group(function () {
         Route::get('/',          [BrandController::class, 'list'])   ->name('list');
@@ -62,6 +88,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('{brand}', [BrandController::class, 'destroy'])->name('destroy');
     });
 
+    // ============================================================
+    //  KATEGORI
+    // ============================================================
     Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori');
     Route::prefix('api/kategori')->name('kategori.')->group(function () {
         Route::get('/',              [KategoriController::class, 'list'])   ->name('list');
@@ -71,8 +100,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('{kategori}', [KategoriController::class, 'destroy'])->name('destroy');
     });
 
+    // ============================================================
+    //  PRODUK
+    // ============================================================
     Route::get('/produk', [ProdukController::class, 'index'])->name('produk');
     Route::get('/produk/tambah', [ProdukController::class, 'create'])->name('produk.create');
+    Route::get('/produk/detail/{id}', [ProdukController::class, 'detailView'])->name('product.detail');
     Route::prefix('api/produk')->name('produk.')->group(function () {
         Route::get('/',           [ProdukController::class, 'list'])   ->name('list');
         Route::get('/options',    [ProdukController::class, 'options']) ->name('options');
@@ -82,32 +115,51 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('{produk}', [ProdukController::class, 'destroy'])->name('destroy');
     });
 
+    // ============================================================
+    //  SLIDER
+    // ============================================================
     Route::get('/slider', [SliderController::class, 'index'])->name('slider');
     Route::prefix('api/slider')->name('slider.')->group(function () {
         Route::get('/',          [SliderController::class, 'list'])   ->name('list');
         Route::post('/',         [SliderController::class, 'store'])  ->name('store');
-        Route::get('{slider}',    [SliderController::class, 'show'])   ->name('show');
-        Route::put('{slider}',    [SliderController::class, 'update']) ->name('update');
+        Route::get('{slider}',   [SliderController::class, 'show'])   ->name('show');
+        Route::put('{slider}',   [SliderController::class, 'update']) ->name('update');
         Route::delete('{slider}', [SliderController::class, 'destroy'])->name('destroy');
     });
 
+    // ============================================================
+    //  KUPON
+    // ============================================================
     Route::get('/kupon', [KuponController::class, 'index'])->name('kupon');
     Route::prefix('api/kupon')->name('kupon.')->group(function () {
         Route::get('/',          [KuponController::class, 'list'])   ->name('list');
         Route::post('/',         [KuponController::class, 'store'])  ->name('store');
-        Route::get('{kupon}',     [KuponController::class, 'show'])   ->name('show');
-        Route::put('{kupon}',     [KuponController::class, 'update']) ->name('update');
+        Route::get('{kupon}',    [KuponController::class, 'show'])   ->name('show');
+        Route::put('{kupon}',    [KuponController::class, 'update']) ->name('update');
         Route::delete('{kupon}', [KuponController::class, 'destroy'])->name('destroy');
     });
 
-    Route::view('/wilayah', 'pages.placeholder', ['title' => 'Data Wilayah'])->name('wilayah');
-    Route::view('/pembatalan', 'pages.placeholder', ['title' => 'Pembatalan'])->name('pembatalan');
-    Route::view('/pengembalian', 'pages.placeholder', ['title' => 'Pengembalian'])->name('pengembalian');
-    Route::view('/ulasan', 'pages.placeholder', ['title' => 'Ulasan'])->name('ulasan');
-    Route::view('/stok', 'pages.placeholder', ['title' => 'Stok Produk'])->name('stok');
-    Route::view('/users', 'pages.placeholder', ['title' => 'Data User'])->name('users');
-    Route::view('/admins', 'pages.placeholder', ['title' => 'Data Admin'])->name('admins');
-    Route::view('/laporan', 'pages.placeholder', ['title' => 'Laporan'])->name('laporan');
+    // ============================================================
+    //  DATA USER
+    // ============================================================
+    Route::get('/users',               [UserController::class, 'index'])   ->name('users');
+    Route::get('/api/users/{user}',    [UserController::class, 'show'])    ->name('users.show');
+    Route::put('/api/users/{user}',    [UserController::class, 'update'])  ->name('users.update');
+    Route::delete('/api/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // ============================================================
+    //  PLACEHOLDER PAGES
+    // ============================================================
+    Route::view('/wilayah',      'pages.placeholder', ['title' => 'Data Wilayah'])  ->name('wilayah');
+    Route::get('/pembatalan',    [PesananController::class, 'dibatalkan'])->name('pembatalan');
+    Route::get('/pengembalian', [PesananController::class, 'pengembalian'])->name('pengembalian');
+    Route::get('/ulasan', [App\Http\Controllers\UlasanController::class, 'index'])->name('ulasan');
+    Route::post('/api/ulasan/{id}/status', [App\Http\Controllers\UlasanController::class, 'updateStatus'])->name('ulasan.update-status');
+    Route::delete('/api/ulasan/{id}', [App\Http\Controllers\UlasanController::class, 'destroy'])->name('ulasan.destroy');
+    Route::get('/stok', [ProdukController::class, 'stok'])->name('stok');
+    Route::view('/admins',       'pages.placeholder', ['title' => 'Data Admin'])    ->name('admins');
+    Route::get('/laporan',           [App\Http\Controllers\Admin\LaporanController::class, 'index'])->name('laporan');
+    Route::get('/api/laporan/chart', [App\Http\Controllers\Admin\LaporanController::class, 'chart'])->name('laporan.chart');
 });
 
 Route::middleware('auth')->prefix('pelanggan')->name('pelanggan.')->group(function () {
@@ -118,6 +170,9 @@ Route::middleware('auth')->prefix('pelanggan')->name('pelanggan.')->group(functi
     Route::get('/alamat', [PelangganDashboardController::class, 'alamat'])->name('alamat');
 });
 
+// ============================================================
+//  SIMULASI PESANAN
+// ============================================================
 Route::post('/api/simulasi-pesanan', function () {
     $produks = \App\Models\Produk::inRandomOrder()->take(rand(1,3))->get();
     $items = [];
@@ -152,3 +207,19 @@ Route::post('/api/simulasi-pesanan', function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// ============================================================
+//  SALZA LANDING PAGE + API KERANJANG + CHECKOUT
+// ============================================================
+Route::get('/landing', [FrontController::class, 'index'])->name('front.home');
+
+Route::prefix('api')->name('api.')->group(function () {
+    Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang');
+    Route::post('/keranjang', [KeranjangController::class, 'tambah'])->name('keranjang.tambah');
+    Route::delete('/keranjang/{id}', [KeranjangController::class, 'hapus'])->name('keranjang.hapus');
+    Route::put('/keranjang/{id}', [KeranjangController::class, 'updateQty'])->name('keranjang.update');
+    Route::get('/produk-detail/{id}', [FrontController::class, 'produkDetail'])->name('produk.detail');
+    Route::post('/checkout', [CheckoutController::class, 'store'])
+        ->middleware('auth')
+        ->name('checkout');
+});

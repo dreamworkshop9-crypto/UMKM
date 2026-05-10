@@ -9,64 +9,65 @@ class Pesanan extends Model
 {
     use HasFactory;
 
+    // Sesuaikan nama tabel kamu
+    protected $table = 'pesanans';
+
+    // Status yang tersedia
+    const STATUS_MENUNGGU      = 'menunggu';
+    const STATUS_DIKONFIRMASI  = 'dikonfirmasi';
+    const STATUS_DIKEMAS       = 'dikemas';
+    const STATUS_DIKIRIM       = 'dikirim';
+    const STATUS_DIPERJALANAN  = 'diperjalanan';
+    const STATUS_SELESAI       = 'selesai';
+    const STATUS_DIBATALKAN    = 'dibatalkan';
+
     protected $fillable = [
-        'code',
-        'customer_name',
-        'customer_phone',
-        'items',
-        'total_price',
+        'user_id',
+        'invoice',
+        'total',
+        'payment_method',
+        'payment_status',
         'status',
         'notes',
+        'shipping_address',
+        'shipping_name',
+        'shipping_phone',
     ];
 
     protected $casts = [
-        'items'      => 'array',
-        'total_price' => 'integer',
-        'status'     => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    public static function generateCode()
+    // Relasi ke user
+    public function user()
     {
-        return 'ORD-' . str_pad(Pesanan::count() + 1, 5, '0', STR_PAD_LEFT);
+        return $this->belongsTo(User::class);
     }
 
-    public function getStatusLabelAttribute()
+    // Relasi ke detail pesanan
+    public function items()
     {
-        $labels = [
-            'masuk'           => ['text-emerald-400','bg-emerald-500/10','border-emerald-500/20'],
-            'dikonfirmasi'      => ['text-blue-400','bg-blue-500/10','border-blue-500/20'],
-            'dalam_perjalanan' => ['text-amber-400','bg-amber-500/10','border-amber-500/20'],
-            'dikemas'         => ['text-purple-400','bg-purple-500/10','border-purple-500/20'],
-            'dikirim'         => ['text-cyan-400','bg-cyan-500/10','border-cyan-500/20'],
-            'selesai'         => ['text-slate-300','bg-slate-600/10','border-slate-600/20'],
-            'dibatalkan'      => ['text-red-400','bg-red-500/10','border-red-500/20'],
-        ];
-        return $labels[$this->status] ?? ['text-slate-400','bg-slate-700/10','border-slate-700/20'];
+        return $this->hasMany(PesananDetail::class, 'pesanan_id');
     }
 
-    public function getStatusDotColor()
+    // Scope: filter berdasarkan status
+    public function scopeStatus($query, $status)
     {
-        $map = [
-            'masuk'           => 'bg-emerald-400',
-            'dikonfirmasi'      => 'bg-blue-400',
-            'dalam_perjalanan' => 'bg-amber-400',
-            'dikemas'         => 'bg-purple-400',
-            'dikirim'         => 'bg-cyan-400',
-            'selesai'         => 'bg-slate-400',
-            'dibatalkan'      => 'bg-red-400',
-        ];
-        return $map[$this->status] ?? 'bg-slate-600';
+        return $query->where('status', $status);
     }
 
-    public function getFormattedPriceAttribute()
+    // Scope: search
+    public function scopeSearch($query, $keyword)
     {
-        return 'Rp' . number_format($this->total_price, 0, ',', '.');
-    }
-
-    public function getItemCountAttribute()
-    {
-        if (!$this->items) return 0;
-        $items = is_array($this->items) ? $this->items : json_decode($this->items, true);
-        return count($items);
+        if ($keyword) {
+            return $query->where(function($q) use ($keyword) {
+                $q->where('invoice', 'LIKE', "%{$keyword}%")
+                  ->orWhere('id', 'LIKE', "%{$keyword}%")
+                  ->orWhere('shipping_name', 'LIKE', "%{$keyword}%")
+                  ->orWhere('shipping_phone', 'LIKE', "%{$keyword}%");
+            });
+        }
+        return $query;
     }
 }

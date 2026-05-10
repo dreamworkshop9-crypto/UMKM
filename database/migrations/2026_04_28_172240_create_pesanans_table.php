@@ -10,13 +10,25 @@ return new class extends Migration
     {
         Schema::create('pesanans', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
-            $table->string('customer_name');
-            $table->string('customer_phone')->nullable();
-            $table->json('items');
-            $table->bigInteger('total_price')->default(0);
-            $table->enum('status', ['masuk','dikonfirmasi','dalam_perjalanan','dikemas','dikirim','selesai','dibatalkan'])->default('masuk');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('invoice')->unique();
+            $table->decimal('total', 15, 2);
+            $table->enum('payment_method', ['bank_transfer', 'ewallet', 'cod', 'qris']);
+            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->enum('status', [
+                'menunggu',
+                'dikonfirmasi',
+                'dikemas',
+                'dikirim',
+                'diperjalanan',
+                'selesai',
+                'dibatalkan',
+            ])->default('menunggu');
+            $table->string('shipping_name');
+            $table->string('shipping_phone');
+            $table->text('shipping_address');
             $table->text('notes')->nullable();
+            $table->string('tracking_number')->nullable();
             $table->timestamps();
         });
     }

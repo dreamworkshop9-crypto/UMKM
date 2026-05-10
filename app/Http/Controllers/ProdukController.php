@@ -16,18 +16,41 @@ class ProdukController extends Controller
         return view('admin.produk.index');
     }
 
+    public function stok(Request $request)
+    {
+        $query = Produk::query();
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where('name', 'like', '%' . $s . '%')
+                  ->orWhere('slug', 'like', '%' . $s . '%')
+                  ->orWhere('sku', 'like', '%' . $s . '%');
+        }
+
+        $produks = $query->orderBy('stock', 'asc')->paginate($request->per_page ?? 10);
+
+        return view('admin.stok', compact('produks'));
+    }
+
     public function create()
     {
-        return view('admin.produk.create');
+        return view('admin.produk.create', [
+            'brands'   => Brand::orderBy('name')->get(),
+            'kategoris' => Kategori::orderBy('name')->get(),
+        ]);
     }
 
     public function list(Request $request)
     {
         $query = Produk::with(['brand', 'kategori']);
 
+        // Fix pencarian supaya tidak tabrakan
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('slug', 'like', '%' . $request->search . '%');
+            $s = '%' . $request->search . '%';
+            $query->where(function($q) use ($s) {
+                $q->where('name', 'like', $s)
+                  ->orWhere('slug', 'like', $s);
+            });
         }
 
         return response()->json($query->orderBy('name')->get());
@@ -73,8 +96,15 @@ class ProdukController extends Controller
         ]);
 
         return response()->json([
-            'message' => "Produk \"{$produk->name}\" berhasil ditambahkan",
+            'message'  => "Produk \"{$produk->name}\" berhasil ditambahkan",
+            'redirect' => route('admin.produk'),
         ], 201);
+    }
+
+    public function detailView($id)
+    {
+        $produk = Produk::with(['brand', 'kategori'])->findOrFail($id);
+        return view('admin.produk.detail', compact('produk'));
     }
 
     public function show(Produk $produk)

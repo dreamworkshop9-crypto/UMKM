@@ -1,187 +1,410 @@
 @extends('layouts.admin')
 
-@section('title', 'Tambah Produk - SALZA')
-@section('page-title', 'Tambah Produk')
+@section('title', 'Tambah Produk')
 
-@section('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+@section('additional-css')
 <style>
-.upload-zone{transition:all .2s;border:2px dashed rgb(51 65 85 / .5)}
-.upload-zone:hover,.upload-zone.drag-over{border-color:#a855f7!important;background:rgba(139,92,246,.05)!important}
-@keyframes toastIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
-@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(100%)}}
-.toast-in{animation:toastIn .3s ease forwards}
-.toast-out{animation:toastOut .25s ease forwards}
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
 </style>
 @endsection
 
 @section('content')
-<div class="max-w-2xl">
-    <div class="bg-dashboard-card rounded-xl border border-slate-700/30 overflow-hidden">
-        <div class="p-6 border-b border-slate-700/50">
-            <div class="flex items-center gap-3 mb-1">
-                <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <i class="fa-solid fa-plus text-purple-400 text-xs"></i>
-                </div>
-                <h2 class="text-lg font-semibold text-white">Form Produk Baru</h2>
+<div class="max-w-[1200px] mx-auto bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 shadow-xl overflow-hidden">
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-6 right-6 z-[9999] hidden">
+        <div class="flex items-center gap-3 bg-[#1c1c2d] border border-emerald-500/40 rounded-xl px-5 py-4 shadow-2xl shadow-emerald-500/10">
+            <span class="material-symbols-outlined text-emerald-400 text-[22px]">check_circle</span>
+            <div>
+                <p class="text-white text-sm font-semibold">Berhasil!</p>
+                <p id="toast-msg" class="text-slate-400 text-xs mt-0.5">Produk berhasil ditambahkan</p>
             </div>
-            <p class="text-xs text-slate-500 ml-11">Isi data produk di bawah ini. Field bertanda <span class="text-red-400">*</span> wajib diisi.</p>
+        </div>
+    </div>
+
+    <div class="p-8">
+
+        <!-- Title -->
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-indigo-500/15 rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-indigo-400 text-[20px]">add_box</span>
+            </div>
+            <div>
+                <h2 class="text-[20px] font-semibold text-white">Form Produk Baru</h2>
+                <p class="text-[12px] text-slate-500 mt-1">Isi data produk baru dengan lengkap</p>
+            </div>
         </div>
 
-        <form id="addForm" class="p-6 space-y-5" novalidate>
-            <!-- Nama -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Nama Produk <span class="text-red-400">*</span></label>
-                <input type="text" id="inputName" placeholder="Contoh: Air Max 90" class="w-full px-4 py-3 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" required>
-                <p id="nameError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Nama wajib diisi</p>
+        <form id="form-produk" method="POST" action="{{ route('admin.produk.store') }}" enctype="multipart/form-data">
+            @csrf
+
+            <!-- Baris 1: Nama + Slug -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold" for="nama">
+                        Nama Produk <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text" id="nama" name="name" value="{{ old('name') }}" required
+                        class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
+                        placeholder="Masukkan nama produk"/>
+                    @error('name')
+                        <p class="text-red-400 text-[11px] flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">error</span>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold">Slug Preview</label>
+                    <div id="slug" class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-slate-500 text-[13px] truncate">{{ old('slug', '-') }}</div>
+                    <input type="hidden" name="slug" id="slug-input" value="{{ old('slug') }}"/>
+                </div>
             </div>
 
-            <!-- Merek & Kategori -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Merek</label>
-                    <select id="inputBrand" class="w-full px-4 py-3 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-white focus:border-purple-500 outline-none">
-                        <option value="">-- Pilih Merek --</option>
+            <!-- Baris 2: Brand + Kategori -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold" for="brand_id">
+                        Merek <span class="text-red-400">*</span>
+                    </label>
+                    <select id="brand_id" name="brand_id" required
+                        class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px] appearance-none cursor-pointer">
+                        <option value="">Pilih Merek</option>
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }} class="bg-[#121220]">
+                                {{ $brand->name }}
+                            </option>
+                        @endforeach
                     </select>
+                    @error('brand_id')
+                        <p class="text-red-400 text-[11px] flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">error</span>
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Kategori <span class="text-red-400">*</span></label>
-                    <select id="inputKategori" class="w-full px-4 py-3 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-white focus:border-purple-500 outline-none" required>
-                        <option value="">-- Pilih Kategori --</option>
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold" for="kategori_id">
+                        Kategori <span class="text-red-400">*</span>
+                    </label>
+                    <select id="kategori_id" name="kategori_id" required
+                        class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px] appearance-none cursor-pointer">
+                        <option value="">Pilih Kategori</option>
+                        @foreach($kategoris as $kategori)
+                            <option value="{{ $kategori->id }}" {{ old('kategori_id') == $kategori->id ? 'selected' : '' }} class="bg-[#121220]">
+                                {{ $kategori->name }}
+                            </option>
+                        @endforeach
                     </select>
-                    <p id="kategoriError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Kategori wajib dipilih</p>
+                    @error('kategori_id')
+                        <p class="text-red-400 text-[11px] flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">error</span>
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
             </div>
 
-            <!-- Harga & Stok -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Harga (Rp) <span class="text-red-400">*</span></label>
-                    <input type="number" id="inputPrice" placeholder="0" min="0" class="w-full px-4 py-3 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" required>
-                    <p id="priceError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Harga wajib diisi</p>
+            <!-- Baris 3: Harga + Stok -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold" for="price">
+                        Harga (Rp) <span class="text-red-400">*</span>
+                    </label>
+                    <input type="number" name="price" value="{{ old('price') }}" required min="0"
+                        class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
+                        placeholder="0"/>
+                    @error('price')
+                        <p class="text-red-400 text-[11px] flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">error</span>
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Stok <span class="text-red-400">*</span></label>
-                    <input type="number" id="inputStock" placeholder="0" min="0" value="0" class="w-full px-4 py-3 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none" required>
+                <div class="space-y-2">
+                    <label class="block text-[12px] text-slate-400 uppercase font-bold" for="stock">
+                        Stok <span class="text-red-400">*</span>
+                    </label>
+                    <input type="number" name="stock" value="{{ old('stock') }}" required min="0"
+                        class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
+                        placeholder="0"/>
+                    @error('stock')
+                        <p class="text-red-400 text-[11px] flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">error</span>
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
             </div>
 
             <!-- Ukuran -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Ukuran <span class="text-red-400">*</span> <span class="text-slate-600 font-normal">(klik untuk pilih)</span></label>
-                <div id="sizePicker" class="flex flex-wrap gap-2 p-3 bg-slate-800 border border-slate-700/50 rounded-lg min-h-[46px]">
-                    <!-- Diisi oleh JavaScript -->
+            <div class="mb-5 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-[12px] text-slate-400 uppercase font-bold">
+                        Ukuran Produk <span class="text-red-400">*</span>
+                    </label>
+                    <button type="button" onclick="addSize()" class="text-indigo-400 hover:text-indigo-300 text-[12px] font-semibold transition-colors flex items-center gap-1">
+                        <span class="text-[16px]">+</span>
+                        Tambah Ukuran
+                    </button>
                 </div>
-                <p id="sizeError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Pilih minimal 1 ukuran</p>
+                <div id="size-list" class="flex flex-wrap gap-2">
+                    @foreach(old('sizes', ['']) as $size)
+                        <div class="flex items-center gap-2">
+                            <input type="text" name="sizes[]" value="{{ $size }}" required
+                                class="bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
+                                placeholder="Contoh: S, M, L, XL"/>
+                            <button type="button" onclick="this.closest('.flex').remove()" class="text-red-400 hover:text-red-300 text-[16px] transition-colors">
+                                <span class="material-symbols-outlined text-[16px]">close</span>
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+                @error('sizes')
+                    <p class="text-red-400 text-[11px] flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[13px]">error</span>
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
 
             <!-- Warna -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Warna <span class="text-red-400">*</span> <span class="text-slate-600 font-normal">(klik untuk pilih)</span></label>
-                <div id="colorPicker" class="flex flex-wrap gap-2 p-3 bg-slate-800 border border-slate-700/50 rounded-lg min-h-[46px]">
-                    <!-- Diisi oleh JavaScript -->
+            <div class="mb-5 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-[12px] text-slate-400 uppercase font-bold">
+                        Warna Produk <span class="text-red-400">*</span>
+                    </label>
+                    <button type="button" onclick="addColor()" class="text-indigo-400 hover:text-indigo-300 text-[12px] font-semibold transition-colors flex items-center gap-1">
+                        <span class="text-[16px]">+</span>
+                        Tambah Warna
+                    </button>
                 </div>
-                <p id="colorError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Pilih minimal 1 warna</p>
+                <div id="color-list" class="flex flex-wrap gap-2">
+                    @foreach(old('colors', ['']) as $color)
+                        <div class="flex items-center gap-2">
+                            <input type="text" name="colors[]" value="{{ $color }}" required
+                                class="bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
+                                placeholder="Contoh: Merah, Biru"/>
+                            <button type="button" onclick="this.closest('.flex').remove()" class="text-red-400 hover:text-red-300 text-[16px] transition-colors">
+                                <span class="material-symbols-outlined text-[16px]">close</span>
+                            </button>
+                        </div>
+                    @endforeach
+                </div>
+                @error('colors')
+                    <p class="text-red-400 text-[11px] flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[13px]">error</span>
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
 
             <!-- Gambar -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Gambar Produk <span class="text-red-400">*</span></label>
-                <div id="uploadZone" class="upload-zone rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer min-h-[130px]">
-                    <div id="uploadPlaceholder" class="text-center">
-                        <div class="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center mx-auto mb-2">
-                            <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg"></i>
-                        </div>
-                        <p class="text-sm font-medium text-slate-400">Klik atau seret gambar ke sini</p>
-                        <p class="text-[11px] text-slate-600 mt-0.5">PNG, JPG, SVG — Maksimal 2MB</p>
-                    </div>
-                    <div id="uploadPreview" class="hidden w-full text-center">
-                        <img id="previewImg" src="" alt="Preview" class="w-20 h-20 rounded-lg object-contain mx-auto mb-2 bg-slate-800 border border-slate-700/50 p-1">
-                        <p id="fileName" class="text-xs font-medium text-slate-300 truncate px-8"></p>
-                        <button type="button" id="removeFile" class="text-[11px] text-red-400 font-semibold hover:text-red-300 mt-1.5 transition-colors"><i class="fa-solid fa-trash-can mr-0.5"></i>Hapus gambar</button>
+            <div class="mb-5 space-y-2">
+                <label class="block text-[12px] text-slate-400 uppercase font-bold" for="image">
+                    Gambar Produk <span class="text-red-400">*</span>
+                </label>
+                <div class="relative flex items-center bg-[#121220] border border-outline-variant/30 rounded-lg overflow-hidden">
+                    <label class="cursor-pointer bg-[#2a2a40] text-slate-300 px-5 py-3 text-[12px] font-medium hover:bg-[#333350] transition-colors border-r border-outline-variant/30 shrink-0" for="image">
+                        Telusuri...
+                    </label>
+                    <span class="px-4 text-slate-500 text-[12px] truncate flex-1" id="gambar-name-display">Tidak ada berkas dipilih</span>
+                    <input accept="image/*" class="hidden" id="image" name="image" required type="file" onchange="previewImg(this)"/>
+                </div>
+                <div id="gambar-preview" class="hidden mt-3">
+                    <div class="bg-[#121220] rounded-xl p-2 border border-outline-variant/20 inline-block w-fit">
+                        <img id="gambar-preview-img" class="max-h-[180px] rounded-lg object-contain" src="" alt="Preview"/>
                     </div>
                 </div>
-                <input type="file" id="inputImage" accept="image/*" class="hidden">
-                <p id="imageError" class="text-xs text-red-400 mt-1 hidden"><i class="fa-solid fa-circle-exclamation mr-0.5"></i>Gambar wajib diunggah</p>
+                @error('image')
+                    <p class="text-red-400 text-[11px] flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[13px]">error</span>
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
 
             <!-- Deskripsi -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Deskripsi</label>
-                <textarea id="inputDesc" rows="3" placeholder="Deskripsi produk (opsional)" class="w-full px-4 py-3 text-sm bg-slate-800 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none resize-none"></textarea>
+            <div class="mb-5 space-y-2">
+                <label class="block text-[12px] text-slate-400 uppercase font-bold" for="description">
+                    Deskripsi
+                </label>
+                <textarea name="description" rows="4"
+                    class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px] resize-none"
+                    placeholder="Tulis deskripsi produk...">{{ old('description') }}</textarea>
+                @error('description')
+                    <p class="text-red-400 text-[11px] flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[13px]">error</span>
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
 
             <!-- Tombol -->
-            <div class="flex gap-3 pt-2">
-                <a href="{{ route('admin.produk') }}" class="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-semibold rounded-lg transition-colors text-center">
-                    <i class="fa-solid fa-arrow-left mr-1.5 text-xs"></i>Kembali
+            <div class="flex gap-3 pt-6 border-t border-outline-variant/10">
+                <a href="{{ route('admin.produk') }}" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#2a2a40] hover:bg-[#333350] text-slate-300 text-[13px] font-semibold transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Kembali
                 </a>
-                <button type="submit" id="submitBtn" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg shadow-md shadow-purple-500/20 transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus text-xs"></i>Simpan Produk
+                <button type="submit" id="btn-submit"
+                    class="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[13px] font-semibold transition-colors shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
+                    <span class="material-symbols-outlined text-[18px]" id="btn-icon">save</span>
+                    <span id="btn-text">Simpan Produk</span>
+                    <svg id="btn-spinner" class="animate-spin h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
                 </button>
             </div>
+
         </form>
     </div>
 </div>
 @endsection
 
-@section('scripts')
-<script>
-const SIZES = ['36','37','38','39','40','41','42','43','44','45'];
-const COLORS = [
-    {name:'Hitam',hex:'#1a1a1a'},{name:'Putih',hex:'#f5f5f5'},{name:'Merah',hex:'#dc2626'},
-    {name:'Navy',hex:'#1e3a5f'},{name:'Abu-abu',hex:'#6b7280'},{name:'Coklat',hex:'#78350f'},
-    {name:'Krem',hex:'#d4c5a9'},{name:'Hijau',hex:'#16a34a'},{name:'Biru',hex:'#2563eb'},
-];
-const API = {store:'{{route("admin.produk.store")}}',options:'{{route("admin.produk.options")}}'};
-let uploadedFile=null,selectedSizes=[],selectedColors=[];
+@section('additional-js')
+// === FIX SCROLL: Paksa main setinggi viewport via JS ===
+function forceScrollFix() {
+    var main = document.querySelector('main');
+    if (!main) return;
+    main.style.setProperty('height', '100vh', 'important');
+    main.style.setProperty('min-height', '0', 'important');
+    main.style.setProperty('max-height', '100vh', 'important');
+    main.style.setProperty('overflow', 'hidden', 'important');
+    var kids = main.children;
+    for (var i = 0; i < kids.length; i++) {
+        if (kids[i].classList.contains('flex-1')) {
+            kids[i].style.setProperty('min-height', '0', 'important');
+            kids[i].style.setProperty('flex', '1 1 0%', 'important');
+            kids[i].style.setProperty('overflow-y', 'auto', 'important');
+        }
+    }
+}
+setTimeout(forceScrollFix, 0);
+setTimeout(forceScrollFix, 100);
 
-function showToast(msg,type='success'){let c=document.getElementById('toastContainer');if(!c){c=document.createElement('div');c.id='toastContainer';c.className='fixed top-6 right-6 z-[60] space-y-3 pointer-events-none';document.body.appendChild(c)}const icons={success:'fa-circle-check text-emerald-400',error:'fa-circle-xmark text-red-400'};const el=document.createElement('div');el.className='toast-in pointer-events-auto flex items-center gap-3 px-5 py-3 bg-slate-800 rounded-xl border border-slate-700/50 shadow-lg min-w-[300px]';el.innerHTML=`<i class="fa-solid ${icons[type]}"></i><span class="text-sm font-semibold text-white flex-1">${msg}</span>`;c.appendChild(el);setTimeout(()=>{el.classList.replace('toast-in','toast-out');setTimeout(()=>el.remove(),250)},3000)}
-
-async function loadOptions(){try{const r=await fetch(API.options);if(!r.ok)throw new Error();const d=await r.json();const bs=d.brands,ks=d.kategoris;document.getElementById('inputBrand').innerHTML='<option value="">-- Pilih Merek --</option>'+bs.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');document.getElementById('inputKategori').innerHTML='<option value="">-- Pilih Kategori --</option>'+ks.map(k=>`<option value="${k.id}">${k.name}</option>`).join('')}catch(e){showToast('Gagal memuat opsi','error')}}
-
-// Ukuran picker
-function buildSizePicker(){const c=document.getElementById('sizePicker');c.innerHTML='';SIZES.forEach(s=>{const active=selectedSizes.includes(s);const btn=document.createElement('button');btn.type='button';btn.className=`px-4 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${active?'bg-purple-600 border-purple-500 text-white shadow-sm shadow-purple-500/25 scale-105':'bg-slate-800 border-slate-700/50 text-slate-400 hover:border-purple-500 hover:text-purple-400'}`;btn.textContent=s;btn.onclick=()=>{if(selectedSizes.includes(s))selectedSizes=selectedSizes.filter(x=>x!==s);else selectedSizes.push(s);buildSizePicker();document.getElementById('sizeError').classList.add('hidden')};c.appendChild(btn)})}
-
-// Warna picker
-function buildColorPicker(){const c=document.getElementById('colorPicker');c.innerHTML='';COLORS.forEach(col=>{const active=selectedColors.includes(col.name);const btn=document.createElement('button');btn.type='button';btn.className=`w-10 h-10 rounded-xl border-2 transition-all flex items-center justify-center ${active?'border-purple-400 scale-110 shadow-lg':'border-slate-700/50 hover:border-slate-400 scale-100'}`;btn.style.background=col.hex;btn.title=col.name;btn.innerHTML=active?'<i class="fa-solid fa-check text-[10px] text-white drop-shadow"></i>':'';btn.onclick=()=>{if(selectedColors.includes(col.name))selectedColors=selectedColors.filter(x=>x!==col.name);else selectedColors.push(col.name);buildColorPicker();document.getElementById('colorError').classList.add('hidden')};c.appendChild(btn)})}
-
-// Upload
-const uz=document.getElementById('uploadZone');
-uz.addEventListener('click',e=>{if(!e.target.closest('#removeFile'))document.getElementById('inputImage').click()});
-uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag-over')});
-uz.addEventListener('dragleave',()=>uz.classList.remove('drag-over'));
-uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag-over');if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0])});
-document.getElementById('inputImage').addEventListener('change',e=>{if(e.target.files.length)handleFile(e.target.files[0])});
-
-function handleFile(file){if(!file.type.startsWith('image/')){showToast('File harus berupa gambar','error');return}if(file.size>2*1024*1024){showToast('Maks 2MB','error');return}uploadedFile=file;const r=new FileReader();r.onload=e=>{document.getElementById('previewImg').src=e.target.result;document.getElementById('fileName').textContent=file.name;document.getElementById('uploadPlaceholder').classList.add('hidden');document.getElementById('uploadPreview').classList.remove('hidden')};r.readAsDataURL(file);document.getElementById('imageError').classList.add('hidden')}
-document.getElementById('removeFile').addEventListener('click',e=>{e.stopPropagation();uploadedFile=null;document.getElementById('inputImage').value='';document.getElementById('uploadPlaceholder').classList.remove('hidden');document.getElementById('uploadPreview').classList.add('hidden')});
-document.getElementById('inputName').addEventListener('input',e=>{if(e.target.value.trim())document.getElementById('nameError').classList.add('hidden')});
-document.getElementById('inputPrice').addEventListener('input',()=>document.getElementById('priceError').classList.add('hidden'));
-document.getElementById('inputKategori').addEventListener('change',()=>document.getElementById('kategoriError').classList.add('hidden'));
-
-// Submit
-document.getElementById('addForm').addEventListener('submit',async e=>{
-    e.preventDefault();const name=document.getElementById('inputName').value.trim(),price=document.getElementById('inputPrice').value,kategori=document.getElementById('inputKategori').value;
-    let ok=true;
-    if(!name){document.getElementById('nameError').classList.remove('hidden');ok=false}
-    if(!kategori){document.getElementById('kategoriError').classList.remove('hidden');ok=false}
-    if(!price||price<0){document.getElementById('priceError').classList.remove('hidden');ok=false}
-    if(!selectedSizes.length){document.getElementById('sizeError').classList.remove('hidden');ok=false}
-    if(!selectedColors.length){document.getElementById('colorError').classList.remove('hidden');ok=false}
-    if(!uploadedFile){document.getElementById('imageError').classList.remove('hidden');ok=false}
-    if(!ok)return;
-
-    const btn=document.getElementById('submitBtn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin text-xs"></i>Menyimpan...';
-    try{const fd=new FormData();fd.append('name',name);fd.append('price',price);fd.append('stock',document.getElementById('inputStock').value||0);
-    fd.append('brand_id',document.getElementById('inputBrand').value);fd.append('kategori_id',kategori);fd.append('description',document.getElementById('inputDesc').value);
-    selectedSizes.forEach(s=>fd.append('sizes[]',s));selectedColors.forEach(c=>fd.append('colors[]',c));fd.append('image',uploadedFile);
-    const r=await fetch(API.store,{method:'POST',headers:{'Accept':'application/json','X-CSRF-TOKEN':'{{csrf_token() }}'},body:fd});
-    if(!r.ok){const err=await r.json();throw new Error(err.message||err.errors?Object.values(err.errors)[0][0]:'Gagal menyimpan')}
-    const d=await r.json();showToast(d.message);setTimeout(()=>{window.location.href='{{route("admin.produk")}}'},1000)}
-    catch(err){showToast(err.message,'error')}finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-plus text-xs"></i>Simpan Produk'}
+// Slug otomatis
+document.getElementById('nama').addEventListener('input', function() {
+    let val = this.value.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    document.getElementById('slug').textContent = val || '-';
+    document.getElementById('slug-input').value = val;
 });
 
-document.addEventListener('DOMContentLoaded',()=>{loadOptions();buildSizePicker();buildColorPicker()});
-</script>
+// Tambah ukuran
+function addSize() {
+    const list = document.getElementById('size-list');
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-2';
+    div.innerHTML = '<input type="text" name="sizes[]" value="" required class="bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]" placeholder="Contoh: S, M, L, XL"/><button type="button" onclick="this.closest(\'.flex\').remove()" class="text-red-400 hover:text-red-300 text-[16px] transition-colors"><span class="material-symbols-outlined text-[16px]">close</span></button>';
+    list.appendChild(div);
+    div.querySelector('input').focus();
+}
+
+// Tambah warna
+function addColor() {
+    const list = document.getElementById('color-list');
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-2';
+    div.innerHTML = '<input type="text" name="colors[]" value="" required class="bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]" placeholder="Contoh: Merah, Biru"/><button type="button" onclick="this.closest(\'.flex\').remove()" class="text-red-400 hover:text-red-300 text-[16px] transition-colors"><span class="material-symbols-outlined text-[16px]">close</span></button>';
+    list.appendChild(div);
+    div.querySelector('input').focus();
+}
+
+// Preview gambar
+function previewImg(input) {
+    const display = document.getElementById('gambar-name-display');
+    const preview = document.getElementById('gambar-preview');
+    const previewImg = document.getElementById('gambar-preview-img');
+    if (input.files.length > 0) {
+        display.textContent = input.files[0].name;
+        display.classList.remove('text-slate-500');
+        display.classList.add('text-slate-200');
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        display.textContent = 'Tidak ada berkas dipilih';
+        display.classList.add('text-slate-500');
+        display.classList.remove('text-slate-200');
+        preview.classList.add('hidden');
+    }
+}
+
+// Submit via AJAX
+document.getElementById('form-produk').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('btn-submit');
+    const btnText = document.getElementById('btn-text');
+    const btnIcon = document.getElementById('btn-icon');
+    const btnSpinner = document.getElementById('btn-spinner');
+
+    btn.disabled = true;
+    btn.classList.add('opacity-70', 'cursor-not-allowed');
+    btnText.textContent = 'Menyimpan...';
+    btnIcon.classList.add('hidden');
+    btnSpinner.classList.remove('hidden');
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        }
+    })
+    .then(res => {
+        if (!res.ok) return res.json().then(err => { throw err; });
+        return res.json();
+    })
+    .then(data => {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-msg');
+        if (data.message) toastMsg.textContent = data.message;
+        toast.classList.remove('hidden');
+        toast.style.animation = 'slideIn 0.3s ease-out';
+
+        setTimeout(() => {
+            window.location.href = data.redirect || '{{ route("admin.produk") }}';
+        }, 1500);
+    })
+    .catch(err => {
+        document.querySelectorAll('.field-error').forEach(el => el.remove());
+        document.querySelectorAll('.border-red-500\\/50').forEach(el => el.classList.remove('border-red-500/50'));
+
+        if (err.errors) {
+            Object.entries(err.errors).forEach(([field, messages]) => {
+                const input = document.querySelector('[name="' + field + '"]');
+                if (input) {
+                    const p = document.createElement('p');
+                    p.className = 'field-error text-red-400 text-[11px] flex items-center gap-1 mt-1';
+                    p.innerHTML = '<span class="material-symbols-outlined text-[13px]">error</span> ' + messages[0];
+                    input.closest('.space-y-2').appendChild(p);
+                    input.classList.add('border-red-500/50');
+                }
+            });
+
+            const firstError = document.querySelector('.field-error');
+            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        btn.disabled = false;
+        btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        btnText.textContent = 'Simpan Produk';
+        btnIcon.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+    });
+});
 @endsection
