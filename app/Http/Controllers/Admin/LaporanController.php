@@ -15,7 +15,6 @@ class LaporanController extends Controller
         $dari = $request->get('dari');
         $sampai = $request->get('sampai');
 
-        // Tentukan range tanggal
         switch ($periode) {
             case 'hari_ini':
                 $start = now()->startOfDay();
@@ -46,10 +45,9 @@ class LaporanController extends Controller
                 $end = now()->endOfMonth();
         }
 
-        // Ringkasan
         $totalPendapatan = Pesanan::whereBetween('created_at', [$start, $end])
             ->where('status', 'selesai')
-            ->sum('total_price');
+            ->sum('total');
 
         $totalPesanan = Pesanan::whereBetween('created_at', [$start, $end])->count();
 
@@ -63,17 +61,14 @@ class LaporanController extends Controller
 
         $rataRata = $pesananSelesai > 0 ? $totalPendapatan / $pesananSelesai : 0;
 
-        // Produk terlaris
         $produkTerlaris = $this->getProdukTerlaris($start, $end);
 
-        // Pesanan per status
         $pesananPerStatus = Pesanan::whereBetween('created_at', [$start, $end])
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->orderByDesc('total')
             ->get();
 
-        // Label periode
         $labelPeriode = $start->format('d M Y') . ' — ' . $end->format('d M Y');
 
         return view('admin.laporan', compact(
@@ -96,7 +91,7 @@ class LaporanController extends Controller
                 $pendapatan = Pesanan::whereYear('created_at', $tahun)
                     ->whereMonth('created_at', $i)
                     ->where('status', 'selesai')
-                    ->sum('total_price');
+                    ->sum('total');
                 $pesanan = Pesanan::whereYear('created_at', $tahun)
                     ->whereMonth('created_at', $i)
                     ->count();
@@ -106,7 +101,6 @@ class LaporanController extends Controller
                 ];
             }
         } else {
-            // Harian (30 hari terakhir)
             $data = [];
             $labels = [];
             for ($i = 29; $i >= 0; $i--) {
@@ -114,7 +108,7 @@ class LaporanController extends Controller
                 $labels[] = $date->format('d M');
                 $pendapatan = Pesanan::whereDate('created_at', $date)
                     ->where('status', 'selesai')
-                    ->sum('total_price');
+                    ->sum('total');
                 $pesanan = Pesanan::whereDate('created_at', $date)->count();
                 $data[] = [
                     'pendapatan' => (float) $pendapatan,
@@ -128,32 +122,29 @@ class LaporanController extends Controller
 
     private function getProdukTerlaris($start, $end)
     {
-        $pesanans = Pesanan::whereBetween('created_at', [$start, $end])
-            ->where('status', 'selesai')
-            ->whereNotNull('items')
-            ->get();
+        $results = DB::table('order_items')
+            ->join('pesanans', 'order_items.order_id', '=', 'pesanans.id')
+            ->join('produks', 'order_items.product_id', '=', 'produks.id')
+            ->whereBetween('pesanans.created_at', [$start, $end])
+            ->where('pesanans.status', 'selesai')
+            ->select(
+                'produks.name',
+                DB::raw('SUM(order_items.quantity) as qty'),
+                DB::raw('SUM(order_items.quantity * order_items.price) as revenue')
+            )
+            ->groupBy('produks.name')
+            ->orderByDesc('qty')
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'qty' => (int) $item->qty,
+                    'revenue' => (float) $item->revenue,
+                ];
+            })
+            ->toArray();
 
-        $produkMap = [];
-        foreach ($pesanans as $pesanan) {
-            $items = is_string($pesanan->items) ? json_decode($pesanan->items, true) : $pesanan->items;
-            if (is_array($items)) {
-                foreach ($items as $item) {
-                    $name = $item['name'] ?? 'Tidak diketahui';
-                    if (!isset($produkMap[$name])) {
-                        $produkMap[$name] = ['name' => $name, 'qty' => 0, 'revenue' => 0];
-                    }
-                    $qty = $item['qty'] ?? 1;
-                    $price = $item['price'] ?? 0;
-                    $produkMap[$name]['qty'] += $qty;
-                    $produkMap[$name]['revenue'] += $qty * $price;
-                }
-            }
-        }
-
-        usort($produkMap, function ($a, $b) {
-            return $b['qty'] - $a['qty'];
-        });
-
-        return array_slice($produkMap, 0, 10);
+        return $results;
     }
 }

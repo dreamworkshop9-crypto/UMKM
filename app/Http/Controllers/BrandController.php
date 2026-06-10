@@ -23,13 +23,13 @@ class BrandController extends Controller
                   ->orWhere('slug', 'like', '%' . $request->search . '%');
         }
 
-        $brands = $query->orderBy('name')->get();
-
-        $brands->transform(function ($brand) {
-            $brand->image_url = $brand->image
-                ? Storage::url($brand->image)
-                : null;
-            return $brand;
+        $brands = $query->orderBy('name')->get()->map(function ($brand) {
+            return [
+                'id'        => $brand->id,
+                'name'      => $brand->name,
+                'slug'      => $brand->slug,
+                'image_url' => $brand->image ? Storage::url($brand->image) : null,
+            ];
         });
 
         return response()->json($brands);
@@ -44,24 +44,26 @@ class BrandController extends Controller
 
         $path = $request->file('image')->store('brands', 'public');
 
-        $brand = Brand::create([
-            'name'  => $request->name,
-            'slug'  => Str::slug($request->name),
-            'image' => $path,
+        Brand::create([
+            'name'      => $request->name,
+            'slug'      => Str::slug($request->name),
+            'image'     => $path,
+            'is_active' => 1,
         ]);
 
         return response()->json([
-            'message' => "Merek \"{$brand->name}\" berhasil ditambahkan",
+            'message' => 'Merek berhasil ditambahkan',
         ], 201);
     }
 
     public function show(Brand $brand)
     {
-        $brand->image_url = $brand->image
-            ? Storage::url($brand->image)
-            : null;
-
-        return response()->json($brand);
+        return response()->json([
+            'id'        => $brand->id,
+            'name'      => $brand->name,
+            'slug'      => $brand->slug,
+            'image_url' => $brand->image ? Storage::url($brand->image) : null,
+        ]);
     }
 
     public function update(Request $request, Brand $brand)
@@ -78,7 +80,7 @@ class BrandController extends Controller
 
         if ($request->hasFile('image')) {
             if ($brand->image) {
-                Storage::delete('public/' . $brand->image);
+                Storage::disk('public')->delete($brand->image);
             }
             $data['image'] = $request->file('image')->store('brands', 'public');
         }
@@ -86,22 +88,19 @@ class BrandController extends Controller
         $brand->update($data);
 
         return response()->json([
-            'message' => "Merek \"{$brand->name}\" berhasil diperbarui",
+            'message' => 'Merek berhasil diperbarui',
         ]);
     }
 
     public function destroy(Brand $brand)
     {
-        $name = $brand->name;
-
         if ($brand->image) {
-            Storage::delete('public/' . $brand->image);
+            Storage::disk('public')->delete($brand->image);
         }
-
         $brand->delete();
 
         return response()->json([
-            'message' => "Merek \"{$name}\" berhasil dihapus",
+            'message' => 'Merek berhasil dihapus',
         ]);
     }
 }
