@@ -117,7 +117,7 @@
     font-size: 11px;
     font-weight: 600;
 }
-.bs-masuk       { background: rgba(59,130,246,0.12); color: #60a5fa; }
+.bs-menunggu       { background: rgba(59,130,246,0.12); color: #60a5fa; }
 .bs-dikonfirmasi{ background: rgba(168,85,247,0.12); color: #c084fc; }
 .bs-dikemas     { background: rgba(234,179,8,0.12); color: #facc15; }
 .bs-dikirim     { background: rgba(6,182,212,0.12); color: #22d3ee; }

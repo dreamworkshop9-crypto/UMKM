@@ -165,34 +165,34 @@ body{background-color:#121220;color:#e3e0f5}
 <tr class="border-b border-outline-variant/5 hover:bg-[#1a1a2e] transition-colors">
 <td class="px-6 py-4 text-[13px] text-slate-400">{{ ($pesanan->currentPage() - 1) * $pesanan->perPage() + $index + 1 }}</td>
 <td class="px-6 py-4 text-[13px] text-slate-300 whitespace-nowrap">{{ $item->created_at->format('d M Y') }}<span class="block text-[11px] text-slate-500">{{ $item->created_at->format('H:i') }}</span></td>
-<td class="px-6 py-4 text-[13px] text-indigo-400 font-mono font-medium">{{ $item->code }}</td>
-<td class="px-6 py-4"><div class="text-[13px] text-slate-200">{{ $item->customer_name }}</div><div class="text-[11px] text-slate-500">{{ $item->customer_phone }}</div></td>
-<td class="px-6 py-4 text-[13px] text-white font-semibold whitespace-nowrap">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
+<td class="px-6 py-4 text-[13px] text-indigo-400 font-mono font-medium">{{ $item->invoice }}</td>
+<td class="px-6 py-4"><div class="text-[13px] text-slate-200">{{ $item->shipping_name }}</div><div class="text-[11px] text-slate-500">{{ $item->shipping_phone }}</div></td>
+<td class="px-6 py-4 text-[13px] text-white font-semibold whitespace-nowrap">Rp {{ number_format($item->total, 0, ',', '.') }}</td>
 <td class="px-6 py-4">
 @php
- $bc=['masuk'=>'bg-blue-500/15 text-blue-400 border-blue-500/20','dikonfirmasi'=>'bg-amber-500/15 text-amber-400 border-amber-500/20','dikemas'=>'bg-purple-500/15 text-purple-400 border-purple-500/20','dikirim'=>'bg-cyan-500/15 text-cyan-400 border-cyan-500/20','diperjalanan'=>'bg-orange-500/15 text-orange-400 border-orange-500/20','selesai'=>'bg-emerald-500/15 text-emerald-400 border-emerald-500/20','dibatalkan'=>'bg-red-500/15 text-red-400 border-red-500/20'];
- $bl=['masuk'=>'Masuk','dikonfirmasi'=>'Dikonfirmasi','dikemas'=>'Dikemas','dikirim'=>'Dikirim','diperjalanan'=>'Dalam Perjalanan','selesai'=>'Selesai','dibatalkan'=>'Dibatalkan'];
+ $bc=['menunggu'=>'bg-blue-500/15 text-blue-400 border-blue-500/20','dikonfirmasi'=>'bg-amber-500/15 text-amber-400 border-amber-500/20','dikemas'=>'bg-purple-500/15 text-purple-400 border-purple-500/20','dikirim'=>'bg-cyan-500/15 text-cyan-400 border-cyan-500/20','diperjalanan'=>'bg-orange-500/15 text-orange-400 border-orange-500/20','selesai'=>'bg-emerald-500/15 text-emerald-400 border-emerald-500/20','dibatalkan'=>'bg-red-500/15 text-red-400 border-red-500/20'];
+ $bl=['menunggu'=>'Menunggu','dikonfirmasi'=>'Dikonfirmasi','dikemas'=>'Dikemas','dikirim'=>'Dikirim','diperjalanan'=>'Dalam Perjalanan','selesai'=>'Selesai','dibatalkan'=>'Dibatalkan'];
 @endphp
 <span class="text-[11px] font-bold px-2.5 py-1 rounded-full border {{ $bc[$item->status] ?? 'bg-slate-500/15 text-slate-400' }}">{{ $bl[$item->status] ?? strtoupper($item->status) }}</span>
 </td>
 <td class="px-6 py-4">
 <div class="flex items-center gap-1.5">
 <a href="{{ route('admin.pesanan.show', $item->id) }}" class="p-1.5 rounded-lg bg-slate-500/10 text-slate-400 hover:text-white hover:bg-slate-500/20 transition-all" title="Detail"><span class="material-symbols-outlined text-[16px]">visibility</span></a>
-@if($statusKey === 'masuk')
-<form method="POST" action="{{ route('admin.pesanan.aksi.konfirmasi', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Konfirmasi {{ $item->code }}?')" class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:text-white hover:bg-emerald-500/20 transition-all" title="Konfirmasi"><span class="material-symbols-outlined text-[16px]">check_circle</span></button></form>
-<form method="POST" action="{{ route('admin.pesanan.aksi.dibatalkan', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Batalkan {{ $item->code }}?')" class="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-white hover:bg-red-500/20 transition-all" title="Batalkan"><span class="material-symbols-outlined text-[16px]">cancel</span></button></form>
+@if($statusKey === 'menunggu')
+<form method="POST" action="{{ route('admin.pesanan.aksi.konfirmasi', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Konfirmasi {{ $item->invoice }}?')" class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:text-white hover:bg-emerald-500/20 transition-all" title="Konfirmasi"><span class="material-symbols-outlined text-[16px]">check_circle</span></button></form>
+<form method="POST" action="{{ route('admin.pesanan.aksi.dibatalkan', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Batalkan {{ $item->invoice }}?')" class="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-white hover:bg-red-500/20 transition-all" title="Batalkan"><span class="material-symbols-outlined text-[16px]">cancel</span></button></form>
 @endif
 @if($statusKey === 'dikonfirmasi')
-<form method="POST" action="{{ route('admin.pesanan.aksi.dikemas', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Kemas {{ $item->code }}?')" class="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 hover:text-white hover:bg-purple-500/20 transition-all" title="Kemas"><span class="material-symbols-outlined text-[16px]">inventory_2</span></button></form>
+<form method="POST" action="{{ route('admin.pesanan.aksi.dikemas', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Kemas {{ $item->invoice }}?')" class="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 hover:text-white hover:bg-purple-500/20 transition-all" title="Kemas"><span class="material-symbols-outlined text-[16px]">inventory_2</span></button></form>
 @endif
 @if($statusKey === 'dikemas')
-<form method="POST" action="{{ route('admin.pesanan.aksi.dikirim', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Kirim {{ $item->code }}?')" class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 hover:text-white hover:bg-cyan-500/20 transition-all" title="Kirim"><span class="material-symbols-outlined text-[16px]">local_shipping</span></button></form>
+<form method="POST" action="{{ route('admin.pesanan.aksi.dikirim', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Kirim {{ $item->invoice }}?')" class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 hover:text-white hover:bg-cyan-500/20 transition-all" title="Kirim"><span class="material-symbols-outlined text-[16px]">local_shipping</span></button></form>
 @endif
 @if($statusKey === 'dikirim')
-<form method="POST" action="{{ route('admin.pesanan.aksi.diperjalanan', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Dalam perjalanan {{ $item->code }}?')" class="p-1.5 rounded-lg bg-orange-500/10 text-orange-400 hover:text-white hover:bg-orange-500/20 transition-all" title="Dalam Perjalanan"><span class="material-symbols-outlined text-[16px]">directions_bike</span></button></form>
+<form method="POST" action="{{ route('admin.pesanan.aksi.diperjalanan', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Dalam perjalanan {{ $item->invoice }}?')" class="p-1.5 rounded-lg bg-orange-500/10 text-orange-400 hover:text-white hover:bg-orange-500/20 transition-all" title="Dalam Perjalanan"><span class="material-symbols-outlined text-[16px]">directions_bike</span></button></form>
 @endif
 @if($statusKey === 'diperjalanan')
-<form method="POST" action="{{ route('admin.pesanan.aksi.selesai', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Selesai {{ $item->code }}?')" class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:text-white hover:bg-emerald-500/20 transition-all" title="Selesai"><span class="material-symbols-outlined text-[16px]">verified</span></button></form>
+<form method="POST" action="{{ route('admin.pesanan.aksi.selesai', $item->id) }}" class="inline">@csrf<button type="submit" onclick="return confirm('Selesai {{ $item->invoice }}?')" class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:text-white hover:bg-emerald-500/20 transition-all" title="Selesai"><span class="material-symbols-outlined text-[16px]">verified</span></button></form>
 @endif
 </div>
 </td>

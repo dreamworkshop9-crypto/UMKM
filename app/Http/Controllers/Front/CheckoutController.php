@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Keranjang;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -28,24 +28,26 @@ class CheckoutController extends Controller
         }
 
         $order = Order::create([
-            'user_id' => Auth::id(),
-            'invoice' => Order::generateCode(),
-            'customer_name' => Auth::user()->name,
-            'customer_phone' => Auth::user()->phone ?? '-',
+            'user_id'          => Auth::id(),
+            'invoice'          => 'INV-' . strtoupper(Str::random(10)),
+            'total'            => $produk->price * $request->jumlah,
+            'payment_method'   => 'cod',
+            'payment_status'   => 'pending',
+            'status'           => 'menunggu',
+            'shipping_name'    => Auth::user()->name,
+            'shipping_phone'   => Auth::user()->phone ?? '-',
             'shipping_address' => $request->alamat ?? '-',
-            'total' => $produk->price * $request->jumlah,
-            'payment_method' => 'cod',
-            'status' => 'menunggu_konfirmasi',
-            'notes' => null,
         ]);
 
-        OrderItem::create([
-            'order_id' => $order->id,
+        DB::table('order_items')->insert([
+            'order_id'   => $order->id,
             'product_id' => $produk->id,
-            'quantity' => $request->jumlah,
-            'price' => $produk->price,
-            'size' => null,
-            'color' => null,
+            'quantity'   => $request->jumlah,
+            'price'      => $produk->price,
+            'size'       => null,
+            'color'      => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $produk->decrement('stock', $request->jumlah);
@@ -89,31 +91,27 @@ class CheckoutController extends Controller
 
             $order = Order::create([
                 'user_id'          => $user->id,
-                'invoice'          => Order::generateCode(),
-                'customer_name'    => $user->name,
-                'customer_phone'   => $user->phone ?? '-',
-                'name'             => $user->name,
-                'phone'            => $user->phone ?? '-',
-                'address'          => $request->alamat,
-                'city'             => $request->provinsi ?? null,
-                'postal_code'      => null,
-                'shipping_address' => $request->alamat,
+                'invoice'          => 'INV-' . strtoupper(Str::random(10)),
                 'total'            => (int) $request->total,
                 'payment_method'   => $request->pembayaran ?? 'cod',
-                'status'           => $request->pembayaran === 'cod'
-                    ? 'menunggu_konfirmasi'
-                    : 'menunggu_pembayaran',
+                'payment_status'   => $request->pembayaran === 'cod' ? 'pending' : 'unpaid',
+                'status'           => 'menunggu',
+                'shipping_name'    => $user->name,
+                'shipping_phone'   => $user->phone ?? '-',
+                'shipping_address' => $request->alamat . ', ' . $request->provinsi,
                 'notes'            => $request->catatan ?? null,
             ]);
 
             foreach ($items as $item) {
-                OrderItem::create([
+                DB::table('order_items')->insert([
                     'order_id'   => $order->id,
                     'product_id' => $item->product_id,
                     'quantity'   => $item->quantity,
                     'price'      => $item->produk->price, 
                     'size'       => $item->size,
                     'color'      => $item->color ?? '-',
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
 
                 $item->produk->decrement('stock', $item->quantity); 

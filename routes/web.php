@@ -74,7 +74,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/pesanan/{id}/konfirmasi',     [PesananController::class, 'aksiKonfirmasi'])     ->name('pesanan.aksi.konfirmasi');
     Route::post('/pesanan/{id}/dikemas',        [PesananController::class, 'aksiDikemas'])        ->name('pesanan.aksi.dikemas');
     Route::post('/pesanan/{id}/dikirim',        [PesananController::class, 'aksiDikirim'])        ->name('pesanan.aksi.dikirim');
-    Route::post('/pesanan/{id}/diperjalanan',   [PesananController::class, 'aksiDiperjalanan'])   ->name('pesanan.aksi.dikirim');
+    Route::post('/pesanan/{id}/diperjalanan',   [PesananController::class, 'aksiDiperjalanan'])   ->name('pesanan.aksi.diperjalanan');
     Route::post('/pesanan/{id}/selesai',        [PesananController::class, 'aksiSelesai'])        ->name('pesanan.aksi.selesai');
     Route::post('/pesanan/{id}/dibatalkan',     [PesananController::class, 'aksiDibatalkan'])     ->name('pesanan.aksi.dibatalkan');
 
