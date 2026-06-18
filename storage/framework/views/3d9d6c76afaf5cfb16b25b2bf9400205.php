@@ -1,9 +1,8 @@
-@extends('layouts.landing')
-@section('title', 'SALZA - Marketplace Sepatu UMKM')
+<?php $__env->startSection('title', 'SALZA - Marketplace Sepatu UMKM'); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
-{{-- HERO --}}
+
 <section id="beranda" class="relative min-h-screen flex items-center pt-20 hero-glow overflow-hidden">
     <div class="absolute top-32 right-10 w-80 h-80 bg-brand-500/8 rounded-full blur-[100px]"></div>
     <div class="absolute bottom-20 left-10 w-60 h-60 bg-blue-500/6 rounded-full blur-[80px]"></div>
@@ -43,19 +42,19 @@
     </div>
 </section>
 
-{{-- KATEGORI --}}
+
 <section class="py-12 border-t border-sf-600/15">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2" id="category-filter">
             <button onclick="setCategory('semua')" data-cat="semua" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 bg-brand-500 text-white shadow-lg shadow-brand-500/20">Semua</button>
-            @foreach($kategori as $kat)
-            <button onclick="setCategory('{{ $kat->slug }}')" data-cat="{{ $kat->slug }}" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-sf-700/50 text-slate-400 border border-sf-600/25 hover:border-brand-500/40 hover:text-white">{{ $kat->name }}</button>
-            @endforeach
+            <?php $__currentLoopData = $kategori; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $kat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <button onclick="setCategory('<?php echo e($kat->slug); ?>')" data-cat="<?php echo e($kat->slug); ?>" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-sf-700/50 text-slate-400 border border-sf-600/25 hover:border-brand-500/40 hover:text-white"><?php echo e($kat->name); ?></button>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>
 </section>
 
-{{-- PRODUK --}}
+
 <section id="produk" class="py-16 lg:py-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16 fade-up">
@@ -64,38 +63,38 @@
             <p class="text-slate-400 max-w-xl mx-auto text-lg">Sepatu berkualitas tinggi dari pengrajin lokal terbaik Indonesia.</p>
         </div>
         <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @foreach($produk as $index => $p)
-            @php
+            <?php $__currentLoopData = $produk; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php
                 $pKatSlug = $p->category->slug ?? '';
                 $pBrand   = $p->brand->name ?? 'UMKM Lokal';
                 $pGambar  = $p->image ? \Storage::url($p->image) : 'https://picsum.photos/seed/shoe-' . $p->id . '/400/400.jpg';
                 $pStok    = $p->stock ?? 0;
-            @endphp
-            <div class="product-card bg-sf-700/40 rounded-2xl border border-sf-600/15 overflow-hidden card-lift img-zoom group fade-up {{ $index < 4 ? 'vis' : '' }}" data-name="{{ strtolower($p->name) }}" data-kategori="{{ $pKatSlug }}" data-umkm="{{ strtolower($pBrand) }}" style="{{ $index >= 4 ? 'transition-delay:'.$index*0.08.'s' : '' }}">
-                <div class="relative overflow-hidden cursor-pointer" onclick="openProductModal({{ $p->id }})">
-                    <img src="{{ $pGambar }}" alt="{{ $p->name }}" class="w-full h-56 object-cover" loading="lazy" onerror="this.src='https://picsum.photos/seed/shoe-{{ $p->id }}/400/400.jpg'">
+            ?>
+            <div class="product-card bg-sf-700/40 rounded-2xl border border-sf-600/15 overflow-hidden card-lift img-zoom group fade-up <?php echo e($index < 4 ? 'vis' : ''); ?>" data-name="<?php echo e(strtolower($p->name)); ?>" data-kategori="<?php echo e($pKatSlug); ?>" data-umkm="<?php echo e(strtolower($pBrand)); ?>" style="<?php echo e($index >= 4 ? 'transition-delay:'.$index*0.08.'s' : ''); ?>">
+                <div class="relative overflow-hidden cursor-pointer" onclick="openProductModal(<?php echo e($p->id); ?>)">
+                    <img src="<?php echo e($pGambar); ?>" alt="<?php echo e($p->name); ?>" class="w-full h-56 object-cover" loading="lazy" onerror="this.src='https://picsum.photos/seed/shoe-<?php echo e($p->id); ?>/400/400.jpg'">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400"></div>
-                    @if($pStok <= 5)<span class="absolute top-3 left-3 px-2.5 py-1 bg-rose-500/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg uppercase tracking-wide">Stok Terbatas</span>@endif
-                    <span class="absolute top-3 right-3 px-2.5 py-1 bg-sf-900/80 backdrop-blur-sm text-slate-300 text-[10px] font-medium rounded-lg">{{ $p->category->name ?? '' }}</span>
+                    <?php if($pStok <= 5): ?><span class="absolute top-3 left-3 px-2.5 py-1 bg-rose-500/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg uppercase tracking-wide">Stok Terbatas</span><?php endif; ?>
+                    <span class="absolute top-3 right-3 px-2.5 py-1 bg-sf-900/80 backdrop-blur-sm text-slate-300 text-[10px] font-medium rounded-lg"><?php echo e($p->category->name ?? ''); ?></span>
                     <div class="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-400">
-                        <button onclick="event.stopPropagation();openProductModal({{ $p->id }})" class="w-full py-2.5 bg-white/90 backdrop-blur-sm text-sf-900 text-xs font-bold rounded-xl hover:bg-white transition-colors">Lihat Detail</button>
+                        <button onclick="event.stopPropagation();openProductModal(<?php echo e($p->id); ?>)" class="w-full py-2.5 bg-white/90 backdrop-blur-sm text-sf-900 text-xs font-bold rounded-xl hover:bg-white transition-colors">Lihat Detail</button>
                     </div>
                 </div>
                 <div class="p-4">
-                    <p class="text-[11px] text-slate-500 font-medium mb-1">{{ $pBrand }}</p>
-                    <h3 class="text-sm font-bold text-white mb-2.5 line-clamp-2 cursor-pointer hover:text-brand-400 transition-colors leading-snug" onclick="openProductModal({{ $p->id }})">{{ $p->name }}</h3>
+                    <p class="text-[11px] text-slate-500 font-medium mb-1"><?php echo e($pBrand); ?></p>
+                    <h3 class="text-sm font-bold text-white mb-2.5 line-clamp-2 cursor-pointer hover:text-brand-400 transition-colors leading-snug" onclick="openProductModal(<?php echo e($p->id); ?>)"><?php echo e($p->name); ?></h3>
                     <div class="flex items-center gap-2 mb-3">
-                        <div class="flex items-center gap-0.5">@for($i=0;$i<5;$i++)<i class="fa-solid fa-star text-[9px] {{ $i < floor($p->rating ?? 0) ? 'text-amber-400' : 'text-sf-600' }}"></i>@endfor<span class="text-xs text-slate-400 ml-1">{{ number_format($p->rating ?? 0, 1) }}</span></div>
+                        <div class="flex items-center gap-0.5"><?php for($i=0;$i<5;$i++): ?><i class="fa-solid fa-star text-[9px] <?php echo e($i < floor($p->rating ?? 0) ? 'text-amber-400' : 'text-sf-600'); ?>"></i><?php endfor; ?><span class="text-xs text-slate-400 ml-1"><?php echo e(number_format($p->rating ?? 0, 1)); ?></span></div>
                         <span class="text-sf-600">·</span>
-                        <span class="text-xs text-slate-500">Terjual {{ $p->terjual ?? 0 }}</span>
+                        <span class="text-xs text-slate-500">Terjual <?php echo e($p->terjual ?? 0); ?></span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <p class="text-base font-black text-brand-400">{{ 'Rp ' . number_format($p->price) }}</p>
-                        <button onclick="event.stopPropagation();quickAdd({{ $p->id }})" class="w-10 h-10 bg-brand-500/10 hover:bg-brand-500 text-brand-400 hover:text-white rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"><i class="fa-solid fa-plus text-sm"></i></button>
+                        <p class="text-base font-black text-brand-400"><?php echo e('Rp ' . number_format($p->price)); ?></p>
+                        <button onclick="event.stopPropagation();quickAdd(<?php echo e($p->id); ?>)" class="w-10 h-10 bg-brand-500/10 hover:bg-brand-500 text-brand-400 hover:text-white rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"><i class="fa-solid fa-plus text-sm"></i></button>
                     </div>
                 </div>
             </div>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
         <div id="empty-state" class="hidden text-center py-24">
             <div class="w-24 h-24 mx-auto bg-sf-700/30 rounded-3xl flex items-center justify-center mb-6"><i class="fa-solid fa-box-open text-4xl text-slate-600"></i></div>
@@ -106,7 +105,7 @@
     </div>
 </section>
 
-{{-- TENTANG --}}
+
 <section id="tentang" class="py-16 lg:py-24 border-t border-sf-600/15">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-16 items-center">
@@ -130,7 +129,7 @@
     </div>
 </section>
 
-{{-- CARA PEMESANAN --}}
+
 <section id="cara-pesan" class="py-16 lg:py-24 border-t border-sf-600/15">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16 fade-up">
@@ -139,21 +138,21 @@
             <p class="text-slate-400 max-w-lg mx-auto">4 langkah mudah untuk mendapatkan sepatu impianmu.</p>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            @php($steps=[['Pilih Produk','Jelajahi dan pilih sepatu favoritmu.','fa-magnifying-glass','from-brand-500 to-brand-700','text-brand-400','1'],['Masukkan Keranjang','Pilih ukuran dan jumlah.','fa-bag-shopping','from-blue-500 to-blue-700','text-blue-400','2'],['Bayar Aman','Pilih metode pembayaran.','fa-credit-card','from-amber-500 to-amber-700','text-amber-400','3'],['Terima Pesanan','Sepatu diantar ke rumahmu.','fa-box-open','from-rose-500 to-rose-700','text-rose-400','4']])
-            @foreach($steps as $i => $s)
-            <div class="relative text-center fade-up group" style="transition-delay:{{$i*0.1}}s">
-                <div class="w-[72px] h-[72px] mx-auto bg-gradient-to-br {{ $s[3] }} rounded-2xl flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 transition-all duration-300"><i class="fa-solid {{ $s[2] }} text-white text-xl"></i></div>
+            <?php ($steps=[['Pilih Produk','Jelajahi dan pilih sepatu favoritmu.','fa-magnifying-glass','from-brand-500 to-brand-700','text-brand-400','1'],['Masukkan Keranjang','Pilih ukuran dan jumlah.','fa-bag-shopping','from-blue-500 to-blue-700','text-blue-400','2'],['Bayar Aman','Pilih metode pembayaran.','fa-credit-card','from-amber-500 to-amber-700','text-amber-400','3'],['Terima Pesanan','Sepatu diantar ke rumahmu.','fa-box-open','from-rose-500 to-rose-700','text-rose-400','4']]); ?>
+            <?php $__currentLoopData = $steps; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <div class="relative text-center fade-up group" style="transition-delay:<?php echo e($i*0.1); ?>s">
+                <div class="w-[72px] h-[72px] mx-auto bg-gradient-to-br <?php echo e($s[3]); ?> rounded-2xl flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 transition-all duration-300"><i class="fa-solid <?php echo e($s[2]); ?> text-white text-xl"></i></div>
                 <div class="hidden lg:block absolute top-9 left-[60%] w-[80%] border-t-2 border-dashed border-sf-600/30"></div>
-                <span class="inline-flex items-center justify-center w-8 h-8 bg-sf-700 {{ $s[4] }} text-xs font-black rounded-full mb-3">{{ $s[5] }}</span>
-                <h3 class="text-base font-bold text-white mb-2">{{ $s[0] }}</h3>
-                <p class="text-sm text-slate-500">{{ $s[1] }}</p>
+                <span class="inline-flex items-center justify-center w-8 h-8 bg-sf-700 <?php echo e($s[4]); ?> text-xs font-black rounded-full mb-3"><?php echo e($s[5]); ?></span>
+                <h3 class="text-base font-bold text-white mb-2"><?php echo e($s[0]); ?></h3>
+                <p class="text-sm text-slate-500"><?php echo e($s[1]); ?></p>
             </div>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>
 </section>
 
-{{-- CTA --}}
+
 <section class="py-16 lg:py-24 border-t border-sf-600/15">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative bg-gradient-to-br from-brand-600 via-brand-700 to-emerald-800 rounded-3xl p-10 md:p-16 text-center overflow-hidden fade-up">
@@ -168,4 +167,5 @@
     </div>
 </section>
 
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.landing', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/irawan/laravel/shoesmarket/UMKMmm/UMKM/resources/views/front/landing.blade.php ENDPATH**/ ?>

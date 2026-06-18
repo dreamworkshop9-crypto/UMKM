@@ -12,7 +12,6 @@ class FrontController extends Controller
 {
     public function index()
     {
-        // Perhatikan baris ke-4 di bawah ini (kategori_id)
         $kategori = Kategori::select('kategoris.id', 'kategoris.name', DB::raw('COUNT(produks.id) as produk_count'))
                         ->leftJoin('produks', 'kategoris.id', '=', 'produks.kategori_id') 
                         ->groupBy('kategoris.id', 'kategoris.name')
@@ -58,7 +57,14 @@ class FrontController extends Controller
             }
         }
         if (!$mainImage && count($allImages)) {
-            $mainImage = count($allImages) ? $allImages[0]['url'] : 'https://picsum.photos/seed/shoe-default/400.jpg';
+            $mainImage = $allImages[0]['url'];
+        }
+
+        // FIX: Mengambil gambar dari kolom 'image' secara manual
+        if (!$mainImage && $produk->image) {
+            $mainImage = str_starts_with($produk->image, 'http')
+                ? $produk->image
+                : asset('storage/' . $produk->image);
         }
 
         return response()->json([

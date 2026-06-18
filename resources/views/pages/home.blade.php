@@ -36,7 +36,7 @@
       @foreach($featuredProducts as $p)
       <div class="product-card" data-cat="{{ \Illuminate\Support\Str::slug($p->category->name??'lainnya') }}">
         <div class="product-img-wrap">
-          <img src="{{ $p->thumbnail_url }}" alt="{{ $p->name }}" loading="lazy"/>
+          <img src="{{ empty($p->image) ? 'https://via.placeholder.com/300x300?text=No+Image' : '/storage/' . $p->image }}" alt="{{ $p->name }}" loading="lazy"/>
           @if($p->discount_percent>0)<span class="badge badge-sale">{{ $p->discount_percent }}%</span>
           @elseif($p->is_new)<span class="badge badge-new">BARU</span>@endif
           <div class="product-actions">
@@ -82,7 +82,7 @@
         <h3 class="side-title">PRODUK TERBARU</h3>
         @foreach($newProducts as $p)
         <div class="mini-product">
-          <img src="{{ $p->thumbnail_url }}" alt="{{ $p->name }}"/>
+          <img src="{{ empty($p->image) ? 'https://via.placeholder.com/300x300?text=No+Image' : '/storage/' . $p->image }}" alt="{{ $p->name }}"/>
           <div class="mini-product-info">
             <h4><a href="{{ route('product.show',[$p->id,$p->slug]) }}">{{ $p->name }}</a></h4>
             <div class="price-row"><span class="price">{{ $p->price_formatted }}</span>@if($p->old_price)<span class="price-old">{{ $p->old_price_formatted }}</span>@endif</div>
@@ -95,7 +95,7 @@
         <h3 class="side-title">BEST SELLER</h3>
         @foreach($bestSellers as $p)
         <div class="mini-product">
-          <img src="{{ $p->thumbnail_url }}" alt="{{ $p->name }}"/>
+          <img src="{{ empty($p->image) ? 'https://via.placeholder.com/300x300?text=No+Image' : '/storage/' . $p->image }}" alt="{{ $p->name }}"/>
           <div class="mini-product-info">
             <h4><a href="{{ route('product.show',[$p->id,$p->slug]) }}">{{ $p->name }}</a></h4>
             <div class="price-row"><span class="price">{{ $p->price_formatted }}</span>@if($p->old_price)<span class="price-old">{{ $p->old_price_formatted }}</span>@endif</div>
@@ -125,7 +125,7 @@
       @foreach($newCollection as $p)
       <div class="product-card">
         <div class="product-img-wrap">
-          <img src="{{ $p->thumbnail_url }}" alt="{{ $p->name }}" loading="lazy"/>
+          <img src="{{ empty($p->image) ? 'https://via.placeholder.com/300x300?text=No+Image' : '/storage/' . $p->image }}" alt="{{ $p->name }}" loading="lazy"/>
           <span class="badge badge-new">BARU</span>
           <div class="product-actions">
             <button class="action-btn" onclick="toggleWishlist({{ $p->id }},this)"><i class="fa fa-heart"></i></button>
@@ -151,7 +151,7 @@
       @foreach($promoProducts as $p)
       <div class="product-card">
         <div class="product-img-wrap">
-          <img src="{{ $p->thumbnail_url }}" alt="{{ $p->name }}" loading="lazy"/>
+          <img src="{{ empty($p->image) ? 'https://via.placeholder.com/300x300?text=No+Image' : '/storage/' . $p->image }}" alt="{{ $p->name }}" loading="lazy"/>
           <span class="badge badge-sale">{{ $p->discount_percent }}%</span>
           <div class="product-actions">
             <button class="action-btn" onclick="toggleWishlist({{ $p->id }},this)"><i class="fa fa-heart"></i></button>

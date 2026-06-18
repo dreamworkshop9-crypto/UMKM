@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class PesananController extends Controller
 {
     private const FLOW = [
-        'menunggu'         => ['dikonfirmasi', 'dibatalkan'],
+        'menunggu'      => ['dikonfirmasi', 'dibatalkan'],
         'dikonfirmasi'  => ['dikemas'],
         'dikemas'       => ['dikirim'],
         'dikirim'       => ['diperjalanan'],
@@ -23,7 +23,6 @@ class PesananController extends Controller
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
-                // ✅ FIX: Kolom disesuaikan dengan tabel pesanans
                 $q->where('invoice', 'LIKE', "%{$s}%")
                   ->orWhere('shipping_name', 'LIKE', "%{$s}%")
                   ->orWhere('shipping_phone', 'LIKE', "%{$s}%");
@@ -75,6 +74,23 @@ class PesananController extends Controller
         return view('admin.pesanan.dibatalkan', compact('pesanan'))->with('pageTitle', 'Pembatalan')->with('statusKey', 'dibatalkan');
     }
 
+    public function pengembalian(Request $request)
+    {
+        $pesanan = Pesanan::where('status', 'selesai')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $s = $request->search;
+                $q->where('invoice', 'LIKE', "%{$s}%")
+                  ->orWhere('shipping_name', 'LIKE', "%{$s}%")
+                  ->orWhere('shipping_phone', 'LIKE', "%{$s}%");
+            })
+            ->orderBy('updated_at', 'desc')
+            ->paginate($request->per_page ?? 10);
+
+        return view('admin.pengembalian', compact('pesanan'))
+            ->with('pageTitle', 'Pengembalian')
+            ->with('statusKey', 'pengembalian');
+    }
+
     public function show($id)
     {
         $pesanan = Pesanan::findOrFail($id);
@@ -96,10 +112,8 @@ class PesananController extends Controller
             $pesanan->update(['status' => $nextStatus]);
             DB::commit();
 
-            // ✅ FIX: Nama route disesuaikan (tanpa 'admin.' di depannya)
-            $routeName = 'pesanan.' . $nextStatus;
+            $routeName = 'admin.pesanan.' . $nextStatus;
             return redirect()->route($routeName)
-                // ✅ FIX: $pesanan->code diganti $pesanan->invoice
                 ->with('success', "Pesanan {$pesanan->invoice} berhasil diubah ke '" . str_replace('_', ' ', ucfirst($nextStatus)) . "'");
         } catch (\Exception $e) {
             DB::rollBack();
@@ -122,22 +136,4 @@ class PesananController extends Controller
         $pesanan->update(['status' => 'dibatalkan']);
         return redirect()->route('admin.pesanan.dibatalkan')->with('success', "Pesanan {$pesanan->invoice} berhasil dibatalkan");
     }
-
-    public function pengembalian(Request $request)
-    {
-        $pesanan = Pesanan::where("status", "selesai")
-            ->when($request->filled("search"), function ($q) use ($request) {
-                $s = $request->search;
-                $q->where("invoice", "LIKE", "%{$s}%")
-                  ->orWhere("shipping_name", "LIKE", "%{$s}%")
-                  ->orWhere("shipping_phone", "LIKE", "%{$s}%");
-            })
-            ->orderBy("updated_at", "desc")
-            ->paginate($request->per_page ?? 10);
-
-        return view("admin.pengembalian", compact("pesanan"))
-            ->with("pageTitle", "Pengembalian")
-            ->with("statusKey", "pengembalian");
-    }
-
 }

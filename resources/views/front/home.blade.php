@@ -24,12 +24,10 @@
      HERO
      ══════════════════════════════════════════════════════════════ -->
 <section id="beranda" class="relative min-h-screen flex items-center pt-20 hero-glow overflow-hidden">
-    <!-- Decorative elements -->
     <div class="absolute top-32 right-10 w-80 h-80 bg-brand-500/8 rounded-full blur-[100px]"></div>
     <div class="absolute bottom-20 left-10 w-60 h-60 bg-blue-500/6 rounded-full blur-[80px]"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-surface-600/10 rounded-full" style="animation:spin-slow 60s linear infinite"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-surface-600/5 rounded-full" style="animation:spin-slow 90s linear infinite reverse"></div>
-    <!-- Grid pattern -->
     <div class="absolute inset-0 opacity-[0.03]" style="background-image:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);background-size:60px 60px"></div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
@@ -56,7 +54,6 @@
                     </a>
                 </div>
 
-                <!-- Stats dengan counter animasi -->
                 <div class="flex gap-10 mt-12 pt-8 border-t border-surface-600/20">
                     <div>
                         <p class="text-3xl font-black text-white stat-num" data-target="500" data-suffix="+">0</p>
@@ -89,7 +86,7 @@
                         <div><p class="text-sm font-bold text-white">Garansi Original</p><p class="text-xs text-slate-500">100% produk lokal</p></div>
                     </div>
                 </div>
-                <div class="absolute top-1/2 -left-10 glass-card rounded-2xl p-3 shadow-xl z-20" style="animation:float 3.5s ease-in-out infinite 0.5s">
+                <div class="absolute top-1/2 -left-10 glass-card rounded-xl px-4 py-3">
                     <div class="flex items-center gap-2">
                         <div class="flex -space-x-2">
                             <img src="https://picsum.photos/seed/avatar-1/32/32.jpg" class="w-7 h-7 rounded-full border-2 border-surface-800">
@@ -185,12 +182,12 @@
         </div>
 
         <!-- Product Grid -->
-        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-4 gap-6">
             @foreach($produk as $index => $p)
             @php
                 $pKatSlug = $p->kategori->slug ?? '';
                 $pBrand   = $p->brand->name ?? 'UMKM Lokal';
-                $pGambar  = $p->image_url;
+                 $pGambar = !empty($p->image) ? \Storage::url($p->image) : 'https://picsum.photos/seed/shoe-' . $p->id . '/400/400.jpg';
             @endphp
             <div class="product-card bg-surface-700/40 rounded-2xl border border-surface-600/15 overflow-hidden card-lift img-zoom group fade-up {{ $index < 4 ? 'vis' : '' }}" data-name="{{ strtolower($p->name) }}" data-kategori="{{ $pKatSlug }}" data-umkm="{{ strtolower($pBrand) }}" style="{{ $index >= 4 ? 'transition-delay:'.$index*0.06.'s' : '' }}">
                 <div class="relative overflow-hidden cursor-pointer" onclick="openProductModal({{ $p->id }})">
@@ -454,7 +451,6 @@ function animateCounters() {
         function tick(now) {
             const elapsed = now - start;
             const progress = Math.min(elapsed / duration, 1);
-            // Ease out cubic
             const eased = 1 - Math.pow(1 - progress, 3);
             el.textContent = Math.round(target * eased) + suffix;
             if (progress < 1) requestAnimationFrame(tick);
@@ -515,7 +511,7 @@ function updateTestiDots() {
     dots.innerHTML = '';
     for (let i = 0; i < total; i++) {
         const dot = document.createElement('button');
-        dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === testiIndex ? 'bg-brand-400 w-8' : 'bg-surface-600 hover:bg-surface-500'}`;
+        dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === testiIndex ? 'bg-brand-400 w-8' : 'bg-surface-600 hover:bg-surface-500'`;
         dot.onclick = () => goTestiSlide(i);
         dots.appendChild(dot);
     }

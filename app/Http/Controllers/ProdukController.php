@@ -109,7 +109,12 @@ class ProdukController extends Controller
 
     public function show(Produk $produk)
     {
-        return response()->json($produk->load(['brand', 'kategori']));
+        $produk->load(['brand', 'kategori']);
+        
+        $data = $produk->toArray();
+        $data['images'] = [['url' => $produk->image_url]];
+
+        return response()->json($data);
     }
 
     public function update(Request $request, Produk $produk)
