@@ -185,9 +185,8 @@
     <section class="py-16 border-t border-slate-700/20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2" id="category-filter">
-                <button onclick="setCategory('semua')" data-cat="semua" class="cat-btn active-cat flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-brand-500 text-white">Semua</button>
                 <?php $__currentLoopData = $kategori ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $kat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <button onclick="setCategory('<?php echo e($kat->slug); ?>')" data-cat="<?php echo e($kat->slug); ?>" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-slate-800 text-slate-400 border border-slate-700/30 hover:border-brand-500/50 hover:text-white">
+                <button onclick="setCategory('<?php echo e($kat->id); ?>')" data-cat="<?php echo e($kat->id); ?>" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-slate-800 text-slate-400 border border-slate-700/30 hover:border-brand-500/50 hover:text-white">
                     <i class="fa-solid fa-tag mr-2 text-xs"></i><?php echo e($kat->name); ?>
 
                 </button>
@@ -206,17 +205,16 @@
             </div>
             <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <?php $__currentLoopData = $produk ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <?php
+                  <?php
                     $pNama = $p->name;
                     $pHarga = $p->price;
-                    // PERBAIKAN 1: Gunakan accessor image_url yang sudah dibuat di Model
-                    $pGambar = $p->image_url; 
-                    $pSlug = $p->kategori->slug ?? '';
+                    $pGambar = $p->thumbnail_url; 
+                    $pKatId = $p->category->id ?? '';      // pakai ->category
                     $pBrand = $p->brand->name ?? 'UMKM Lokal';
                     $pStok = $p->stock;
-                    $pKatName = $p->kategori->name ?? '';
+                    $pKatName = $p->category->name ?? '';  // pakai ->category
                 ?>
-                <div class="product-card bg-dashboard-card rounded-2xl border border-slate-700/30 overflow-hidden card-hover img-zoom group fade-up visible" data-name="<?php echo e($pNama); ?>" data-kategori="<?php echo e($pSlug); ?>" data-umkm="<?php echo e($pBrand); ?>">
+                <div class="product-card bg-dashboard-card rounded-2xl border border-slate-700/30 overflow-hidden card-hover img-zoom group fade-up visible" data-name="<?php echo e($pNama); ?>" data-kategori="<?php echo e($pKatId); ?>" data-umkm="<?php echo e($pBrand); ?>">
                     <div class="relative overflow-hidden cursor-pointer" onclick="openProductModal('<?php echo e($p->id); ?>')">
                         <img src="<?php echo e($pGambar); ?>" alt="<?php echo e($pNama); ?>" class="w-full h-56 object-cover" onerror="this.src='https://picsum.photos/seed/shoe-<?php echo e($p->id); ?>/400/400.jpg'">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -243,11 +241,10 @@
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
             <div id="empty-state" class="hidden text-center py-20">
-                <i class="fa-solid fa-box-open text-5xl text-slate-700 mb-4"></i>
-                <p class="text-slate-500 text-lg">Produk tidak ditemukan.</p>
-                <button onclick="setCategory('semua');document.getElementById('search-input').value='';filterProducts();" class="mt-4 text-brand-400 hover:text-brand-300 text-sm font-medium">Reset Filter</button>
-            </div>
-        </div>
+    <i class="fa-solid fa-box-open text-5xl text-slate-700 mb-4"></i>
+    <p class="text-slate-500 text-lg">Produk tidak ditemukan.</p>
+    <button onclick="document.getElementById('search-input').value=''; setCategory('<?php echo e($kategori->first()->id ?? ""); ?>');" class="mt-4 text-brand-400 hover:text-brand-300 text-sm font-medium">Reset Filter</button> 
+</div>
     </section>
 
     
@@ -341,7 +338,7 @@
                     </div>
                 </div>
                 <div><h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Navigasi</h4><ul class="space-y-3"><li><a href="#beranda" class="text-sm text-slate-500 hover:text-brand-400">Beranda</a></li><li><a href="#produk" class="text-sm text-slate-500 hover:text-brand-400">Produk</a></li><li><a href="#tentang" class="text-sm text-slate-500 hover:text-brand-400">Tentang</a></li></ul></div>
-                <div><h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Kategori</h4><ul class="space-y-3"><?php $__currentLoopData = $kategori ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $kat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><li><a href="#" onclick="setCategory('<?php echo e($kat->slug); ?>');document.getElementById('produk').scrollIntoView({behavior:'smooth'});return false;" class="text-sm text-slate-500 hover:text-brand-400"><?php echo e($kat->name); ?></a></li><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?></ul></div>
+                <div><h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Kategori</h4><ul class="space-y-3"><?php $__currentLoopData = $kategori ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $kat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><li><a href="#" onclick="setCategory('<?php echo e($kat->id); ?>');document.getElementById('produk').scrollIntoView({behavior:'smooth'});return false;" ...> class="text-sm text-slate-500 hover:text-brand-400"><?php echo e($kat->name); ?></a></li><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?></ul></div>
                 <div><h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Kontak</h4><ul class="space-y-3"><li class="flex items-start gap-3"><i class="fa-solid fa-location-dot text-slate-600 mt-0.5 text-sm"></i><span class="text-sm text-slate-500">Jl. Pengrajin No. 45, Bandung</span></li><li class="flex items-center gap-3"><i class="fa-solid fa-phone text-slate-600 text-sm"></i><span class="text-sm text-slate-500">+62 812-3456-7890</span></li><li class="flex items-center gap-3"><i class="fa-solid fa-envelope text-slate-600 text-sm"></i><span class="text-sm text-slate-500">hello@salza.id</span></li></ul></div>
             </div>
             <div class="border-t border-slate-700/30 pt-8 text-center"><p class="text-xs text-slate-600">&copy; <?php echo e(date('Y')); ?> SALZA. All rights reserved.</p></div>
@@ -529,8 +526,8 @@
         }
     };
 
-    let cart = [], currentCategory = 'semua', shippingCost = 0;
-    const shippingRates = <?php echo json_encode($ongkirRates ?? [], 15, 512) ?>;
+let cart = [], currentCategory = '<?php echo e($kategori->isNotEmpty() ? $kategori->first()->id : "semua"); ?>', shippingCost = 0;
+const shippingRates = <?php echo json_encode($ongkirRates ?? [], 15, 512) ?>;
 
     async function api(url, method = 'GET', data = null) {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -575,19 +572,22 @@
 
     function handleCheckoutClick() { if (!cart.length) return; if (!APP.isLoggedIn) { closeCart(); setTimeout(() => openAuthModal('login'), 350); return; } openCheckout(); }
 
-    async function openProductModal(id) {
-        const modal = document.getElementById('product-modal'), content = document.getElementById('product-modal-content');
-        modal.classList.remove('hidden'); document.body.style.overflow = 'hidden';
-        content.innerHTML = '<div class="flex items-center justify-center h-64"><i class="fa-solid fa-spinner fa-spin text-brand-400 text-2xl"></i></div>';
-        try {
-            const r = await api(APP.routes.produkDetail.replace('ID', id)), p = r.data;
-            
-            // PERBAIKAN 2: Sesuaikan dengan format JSON 'images' yang baru dari Controller
-            const fotoUrl = (p.images && p.images.length > 0) ? p.images[0].url : `https://picsum.photos/seed/shoe-${p.id}/800/500.jpg`;
-            
-            content.innerHTML = `<div class="relative"><img src="${fotoUrl}" class="w-full h-64 sm:h-80 object-cover rounded-t-2xl"><button onclick="closeProductModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button><span class="absolute top-4 left-4 px-3 py-1.5 ${(p.stok??p.stock??0)<=5?'bg-rose-500':'bg-brand-500'} text-white text-xs font-bold rounded-lg">Stok: ${p.stok??p.stock??0}</span></div><div class="p-6 sm:p-8"><p class="text-xs text-brand-400 font-semibold uppercase tracking-wider mb-2">${p.brand?.nama ?? p.brand?.name ?? 'UMKM'}</p><h2 class="text-2xl font-bold text-white mb-3">${p.nama ?? p.name}</h2><div class="flex items-center gap-4 mb-4"><div class="flex items-center gap-1">${Array(5).fill(0).map((_,i)=>'<i class="fa-solid fa-star text-xs '+(i<Math.floor(p.rating||0)?'text-amber-400':'text-slate-700')+'"></i>').join('')}<span class="text-sm text-slate-400 ml-1">${Number(p.rating||0).toFixed(1)}</span></div><span class="text-slate-700">|</span><span class="text-sm text-slate-500">Terjual ${p.terjual??0}</span></div><p class="text-2xl font-bold text-brand-400 mb-4">${formatRp(p.harga ?? p.price ?? 0)}</p><p class="text-sm text-slate-400 leading-relaxed mb-6">${p.deskripsi ?? p.description ?? ''}</p><div class="mb-6"><p class="text-sm font-medium text-white mb-3">Pilih Ukuran:</p><div class="flex flex-wrap gap-2" id="size-opt">${(p.ukuran??p.sizes??[]).map((s,i)=>'<button type="button" onclick="pickSize(this,\''+s+'\')" class="sz px-4 py-2.5 border '+(i===0?'border-brand-500 bg-brand-500/10 text-brand-400':'border-slate-600 text-slate-400 hover:border-brand-500/50 hover:text-white')+' rounded-lg text-sm font-medium transition-all">'+s+'</button>').join('')}</div><input type="hidden" id="sel-size" value="${(p.ukuran??p.sizes??[])[0]??''}"></div><button onclick="addToCartModal('${p.id}')" class="w-full py-3.5 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-bag-shopping text-sm"></i> Tambah ke Keranjang</button></div>`;
-        } catch (e) { content.innerHTML = `<div class="p-10 text-center"><i class="fa-solid fa-circle-exclamation text-rose-400 text-3xl mb-4"></i><p class="text-slate-400">${e.message||'Gagal memuat'}</p><button onclick="closeProductModal()" class="mt-4 text-brand-400 text-sm font-medium">Tutup</button></div>`; }
-    }
+async function openProductModal(id) {
+    const modal = document.getElementById('product-modal'), content = document.getElementById('product-modal-content');
+    modal.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+    content.innerHTML = '<div class="flex items-center justify-center h-64"><i class="fa-solid fa-spinner fa-spin text-brand-400 text-2xl"></i></div>';
+    try {
+        const r = await api(APP.routes.produkDetail.replace('ID', id)), p = r.data;
+        
+        // PERBAIKAN: Langsung pakai thumbnail_url (sudah dihandle oleh Model)
+        const fotoUrl = p.thumbnail_url || (p.images && p.images.length > 0 ? p.images[0].url : `https://picsum.photos/seed/shoe-${p.id}/800/500.jpg`);
+                // TAMBAHKAN INI UNTUK DEBUG
+        console.log('DATA PRODUK:', p);
+        console.log('URL GAMBAR YANG DIPAKAI:', fotoUrl);
+        
+        content.innerHTML = `<div class="relative"><img src="${fotoUrl}" class="w-full h-64 sm:h-80 object-cover rounded-t-2xl"><button onclick="closeProductModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button><span class="absolute top-4 left-4 px-3 py-1.5 ${(p.stok??p.stock??0)<=5?'bg-rose-500':'bg-brand-500'} text-white text-xs font-bold rounded-lg">Stok: ${p.stok??p.stock??0}</span></div><div class="p-6 sm:p-8"><p class="text-xs text-brand-400 font-semibold uppercase tracking-wider mb-2">${p.brand?.nama ?? p.brand?.name ?? 'UMKM'}</p><h2 class="text-2xl font-bold text-white mb-3">${p.nama ?? p.name}</h2><div class="flex items-center gap-4 mb-4"><div class="flex items-center gap-1">${Array(5).fill(0).map((_,i)=>'<i class="fa-solid fa-star text-xs '+(i<Math.floor(p.rating||0)?'text-amber-400':'text-slate-700')+'"></i>').join('')}<span class="text-sm text-slate-400 ml-1">${Number(p.rating||0).toFixed(1)}</span></div><span class="text-slate-700">|</span><span class="text-sm text-slate-500">Terjual ${p.terjual??0}</span></div><p class="text-2xl font-bold text-brand-400 mb-4">${formatRp(p.harga ?? p.price ?? 0)}</p><p class="text-sm text-slate-400 leading-relaxed mb-6">${p.deskripsi ?? p.description ?? ''}</p><div class="mb-6"><p class="text-sm font-medium text-white mb-3">Pilih Ukuran:</p><div class="flex flex-wrap gap-2" id="size-opt">${(p.ukuran??p.sizes??[]).map((s,i)=>'<button type="button" onclick="pickSize(this,\''+s+'\')" class="sz px-4 py-2.5 border '+(i===0?'border-brand-500 bg-brand-500/10 text-brand-400':'border-slate-600 text-slate-400 hover:border-brand-500/50 hover:text-white')+' rounded-lg text-sm font-medium transition-all">'+s+'</button>').join('')}</div><input type="hidden" id="sel-size" value="${(p.ukuran??p.sizes??[])[0]??''}"></div><button onclick="addToCartModal('${p.id}')" class="w-full py-3.5 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-bag-shopping text-sm"></i> Tambah ke Keranjang</button></div>`;
+    } catch (e) { content.innerHTML = `<div class="p-10 text-center"><i class="fa-solid fa-circle-exclamation text-rose-400 text-3xl mb-4"></i><p class="text-slate-400">${e.message||'Gagal memuat'}</p><button onclick="closeProductModal()" class="mt-4 text-brand-400 text-sm font-medium">Tutup</button></div>`; }
+}
     function closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); document.body.style.overflow = ''; }
     function pickSize(btn, s) { document.getElementById('sel-size').value = s; document.querySelectorAll('#size-opt .sz').forEach(b => { b.className = 'sz px-4 py-2.5 border border-slate-600 text-slate-400 hover:border-brand-500/50 hover:text-white rounded-lg text-sm font-medium transition-all'; }); btn.className = 'sz px-4 py-2.5 border border-brand-500 bg-brand-500/10 text-brand-400 rounded-lg text-sm font-medium transition-all'; }
     function addToCartModal(id) { quickAddToCart(id, document.getElementById('sel-size').value); closeProductModal(); }
@@ -637,5 +637,41 @@
     document.querySelectorAll('[id="flash-msg"]').forEach(el => setTimeout(() => { el.classList.add('toast-exit'); setTimeout(() => el.remove(), 300); }, 5000));
     document.addEventListener('DOMContentLoaded', loadCart);
     </script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstProduct = document.querySelector('.product-card');
+            const buttons = document.querySelectorAll('#category-filter .cat-btn');
+            
+            if (!buttons.length) {
+                filterProducts();
+                document.getElementById('product-grid').style.opacity = '1';
+                return;
+            }
+
+            // Default pilih tombol pertama
+            let catToSelect = buttons[0].dataset.cat; 
+
+            // LOGIKA PINTAR: Cegah halaman kosong saat pertama kali load
+            if (firstProduct) {
+                const productCat = firstProduct.dataset.kategori;
+                // Cek apakah ada produk yang cocok dengan kategori tombol pertama?
+                const hasProductsInFirstCat = document.querySelector(`.product-card[data-kategori="${catToSelect}"]`);
+                
+                // Jika TIDAK ADA produk di kategori pertama, pindahkan pilihan ke kategori produk pertama
+                if (!hasProductsInFirstCat && productCat) {
+                    const matchBtn = document.querySelector(`#category-filter .cat-btn[data-cat="${productCat}"]`);
+                    if (matchBtn) {
+                        catToSelect = productCat; 
+                    }
+                }
+            }
+
+            // Jalankan filter
+            setCategory(catToSelect);
+            
+            // Tampilkan grid
+            document.getElementById('product-grid').style.opacity = '1';
+        });
+    </script>
 </body>
-</html> ,tambahkan fitur transaksi payment gateaway,tambah kerajang <?php /**PATH /home/irawan/laravel/shoesmarket/UMKMmm/UMKM/resources/views/layouts/landing.blade.php ENDPATH**/ ?>
+</html><?php /**PATH /home/irawan/laravel/shoesmarket/UMKMmm/UMKM/resources/views/layouts/landing.blade.php ENDPATH**/ ?>

@@ -79,20 +79,23 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Sesi habis, silakan login ulang.'], 401);
         }
 
+        // 1. Validasi produk di luar transaction (jangan ada return response di dalam transaction)
+        foreach ($items as $item) {
+            if (!$item->produk) {
+                return response()->json([
+                    'message' => 'Produk tidak ditemukan atau sudah dihapus. Silakan hapus dari keranjang.'
+                ], 422);
+            }
+        }
+
+        // 2. Jalankan transaction
         return DB::transaction(function () use ($request, $items, $user) {
             
-            foreach ($items as $item) {
-                if (!$item->produk) {
-                    return response()->json([
-                        'message' => 'Produk tidak ditemukan atau sudah dihapus. Silakan hapus dari keranjang.'
-                    ], 422);
-                }
-            }
-
             $order = Order::create([
                 'user_id'          => $user->id,
                 'invoice'          => 'INV-' . strtoupper(Str::random(10)),
                 'total'            => (int) $request->total,
+                
                 'payment_method'   => $request->pembayaran ?? 'cod',
                 'payment_status'   => $request->pembayaran === 'cod' ? 'pending' : 'unpaid',
                 'status'           => 'menunggu',
@@ -102,19 +105,24 @@ class CheckoutController extends Controller
                 'notes'            => $request->catatan ?? null,
             ]);
 
+            // Pengaman: pastikan order benar-benar terbuat
+            if (!$order || !$order->id) {
+                throw new \Exception('Gagal membuat pesanan utama.');
+            }
+
             foreach ($items as $item) {
                 DB::table('order_items')->insert([
                     'order_id'   => $order->id,
-                    'product_id' => $item->product_id,
-                    'quantity'   => $item->quantity,
+                    'product_id' => $item->produk_id ?? $item->product_id,
+                    'quantity'   => $item->qty ?? $item->quantity,
                     'price'      => $item->produk->price, 
-                    'size'       => $item->size,
-                    'color'      => $item->color ?? '-',
+                    'size'       => $item->size ?? null,
+                    'color'      => $item->color ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
 
-                $item->produk->decrement('stock', $item->quantity); 
+                $item->produk->decrement('stock', ($item->qty ?? $item->quantity)); 
             }
 
             Keranjang::where('user_id', $user->id)->delete();

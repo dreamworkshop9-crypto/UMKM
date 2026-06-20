@@ -1,14 +1,16 @@
 <?php
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage; // ← TAMBAHKAN INI
  
 class Product extends Model {
     use HasFactory;
     protected $table = 'produks';
     protected $fillable = ['name','slug','description','price','old_price','stock','stok','harga','thumbnail','image','sku','weight','kategori_id','subcategory_id','subsubcategory_id','brand_id','is_active','is_new','is_best_seller'];
     protected $casts = ['is_active'=>'boolean','is_new'=>'boolean','is_best_seller'=>'boolean','price'=>'integer','old_price'=>'integer'];
- 
+    protected $appends = ['thumbnail_url', 'price_formatted'];
     public function category()   { return $this->belongsTo(Category::class, 'kategori_id'); }
     public function brand()      { return $this->belongsTo(Brand::class); }
     public function images()     { return $this->hasMany(ProductImage::class); }
@@ -37,10 +39,26 @@ class Product extends Model {
         if (!$this->old_price || $this->old_price <= $this->price) return 0;
         return round((($this->old_price - $this->price) / $this->old_price) * 100);
     }
-    public function getThumbnailUrlAttribute() {
-    $path = $this->thumbnail ?: $this->image;
-    return $path ? '/storage/'.$path : 'https://via.placeholder.com/300x300?text=No+Image';
+public function getThumbnailUrlAttribute() {
+    // 1. PRIORITAS UTAMA: Kolom "image" (Gambar utama dari Form Create)
+    if ($this->image) {
+        return Storage::url($this->image);
     }
+    
+    // 2. FALLBACK: Gallery tambahan (tabel product_images)
+    if ($this->relationLoaded('images') && $this->images->isNotEmpty()) {
+        return Storage::url($this->images->first()->image);
+    }
+    
+    // 3. Kolom thumbnail
+    if ($this->thumbnail) {
+        return Storage::url($this->thumbnail);
+    }
+    
+    // 4. Default
+    return asset('images/default-product.jpg');
+}
+
     public function getPriceFormattedAttribute() { return 'Rp'.number_format($this->price,0,',','.'); }
     public function getOldPriceFormattedAttribute() { return $this->old_price ? 'Rp'.number_format($this->old_price,0,',','.') : null; }
 }

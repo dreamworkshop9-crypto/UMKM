@@ -47,11 +47,26 @@
 <section class="py-12 border-t border-sf-600/15">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2" id="category-filter">
-            <button onclick="setCategory('semua')" data-cat="semua" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 bg-brand-500 text-white shadow-lg shadow-brand-500/20">Semua</button>
-            @foreach($kategori as $kat)
-            <button onclick="setCategory('{{ $kat->slug }}')" data-cat="{{ $kat->slug }}" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-sf-700/50 text-slate-400 border border-sf-600/25 hover:border-brand-500/40 hover:text-white">{{ $kat->name }}</button>
+            {{-- HAPUS TOMBOL "SEMUA" --}}
+            
+            @foreach($kategori as $index => $kat)
+            <button onclick="setCategory('{{ $kat->slug }}')" data-cat="{{ $kat->slug }}" 
+                class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 
+                {{ $index === 0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'bg-sf-700/50 text-slate-400 border border-sf-600/25 hover:border-brand-500/40 hover:text-white' }}">
+                {{ $kat->name }}
+            </button>
             @endforeach
         </div>
+        
+        {{-- Script agar langsung memfilter kategori pertama saat halaman dibuka --}}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const firstCat = document.querySelector('#category-filter .cat-btn');
+                if (firstCat) {
+                    setCategory(firstCat.dataset.cat);
+                }
+            });
+        </script>
     </div>
 </section>
 
@@ -68,7 +83,7 @@
             @php
                 $pKatSlug = $p->category->slug ?? '';
                 $pBrand   = $p->brand->name ?? 'UMKM Lokal';
-                $pGambar  = $p->image ? \Storage::url($p->image) : 'https://picsum.photos/seed/shoe-' . $p->id . '/400/400.jpg';
+                $pGambar  = $p->thumbnail_url;
                 $pStok    = $p->stock ?? 0;
             @endphp
             <div class="product-card bg-sf-700/40 rounded-2xl border border-sf-600/15 overflow-hidden card-lift img-zoom group fade-up {{ $index < 4 ? 'vis' : '' }}" data-name="{{ strtolower($p->name) }}" data-kategori="{{ $pKatSlug }}" data-umkm="{{ strtolower($pBrand) }}" style="{{ $index >= 4 ? 'transition-delay:'.$index*0.08.'s' : '' }}">

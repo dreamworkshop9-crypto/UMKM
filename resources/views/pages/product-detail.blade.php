@@ -1,8 +1,18 @@
-@extends('layouts.app')
+    @extends('layouts.app')
 @section('title', $product->name . ' - SALZA')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-6 py-12">
+    <!-- === DEBUG SEMENTARA === -->
+<div class="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-xs font-mono text-white space-y-1">
+    <p><strong>Raw Image DB:</strong> {{ $product->image ?? 'NULL' }}</p>
+    <p><strong>Hasil Thumbnail URL:</strong> {{ $product->thumbnail_url }}</p>
+    <p><strong>Jumlah Gallery:</strong> {{ $product->images->count() }}</p>
+    @if($product->images->count() > 0)
+        <p><strong>Gallery Pertama:</strong> {{ $product->images->first()->image }}</p>
+    @endif
+</div>
+<!-- === AKHIR DEBUG === -->
     <!-- Breadcrumb -->
     <nav class="flex text-sm text-slate-400 mb-8" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
