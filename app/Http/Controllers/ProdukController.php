@@ -40,6 +40,15 @@ class ProdukController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        return view('admin.produk.edit', [
+            'produk'   => Produk::findOrFail($id),
+            'brands'   => Brand::orderBy('name')->get(),
+            'kategoris' => Kategori::orderBy('name')->get(),
+        ]);
+    }
+
     public function list(Request $request)
     {
         $query = Produk::with(['brand', 'kategori']);

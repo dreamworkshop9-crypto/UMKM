@@ -162,7 +162,7 @@
                     Aksi
                 </h3>
                 <div class="space-y-2">
-                    <a href="{{ route('admin.produk.create') }}" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[13px] font-semibold transition-colors shadow-lg shadow-indigo-500/20">
+                    <a href="{{ route('admin.produk.edit', $produk->id) }}" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[13px] font-semibold transition-colors shadow-lg shadow-indigo-500/20">
                         <span class="material-symbols-outlined text-[18px]">edit</span>
                         Edit Produk
                     </a>

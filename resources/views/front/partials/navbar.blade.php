@@ -21,7 +21,7 @@
                 <button onclick="openAuthModal('login')" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40"><i class="fa-solid fa-right-to-bracket text-xs"></i> Masuk</button>
                 @endguest
                 @auth
-                <a href="{{ route('pelanggan.pesanan') }}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 bg-sf-700/50 hover:bg-sf-700 text-white text-sm font-medium rounded-xl transition-all border border-sf-600/20"><i class="fa-solid fa-box text-xs text-brand-400"></i> Pesanan</a>
+                <a href="{{ route('shop') }}?open_account=pesanan" onclick="if(typeof openAccount !== 'undefined') { event.preventDefault(); openAccount('pesanan'); }" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 bg-sf-700/50 hover:bg-sf-700 text-white text-sm font-medium rounded-xl transition-all border border-sf-600/20"><i class="fa-solid fa-box text-xs text-brand-400"></i> Pesanan</a>
                 <div class="hidden sm:block relative" id="dd-wrap">
                     <button onclick="document.getElementById('dd-menu').classList.toggle('hidden')" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-sf-700/50 transition-all">
                         <div class="w-8 h-8 bg-brand-500/20 rounded-full flex items-center justify-center"><i class="fa-solid fa-user text-brand-400 text-xs"></i></div>
@@ -31,8 +31,9 @@
                     <div id="dd-menu" class="hidden absolute right-0 top-full mt-2 w-56 bg-sf-700 border border-sf-600/20 rounded-xl shadow-2xl overflow-hidden z-50">
                         <div class="px-4 py-3 border-b border-sf-600/20"><p class="text-sm font-bold text-white">{{ auth()->user()->name }}</p><p class="text-xs text-slate-500">{{ auth()->user()->email }}</p></div>
                         <div class="py-1">
-                            <a href="{{ route('pelanggan.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-sf-600/30"><i class="fa-solid fa-gauge w-4 text-center text-slate-500"></i>Dashboard</a>
-                            <a href="{{ route('pelanggan.pesanan') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-sf-600/30"><i class="fa-solid fa-box w-4 text-center text-slate-500"></i>Pesanan Saya</a>
+                            <a href="{{ route('shop') }}?open_account=dashboard" onclick="if(typeof openAccount !== 'undefined') { event.preventDefault(); openAccount('dashboard'); }" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-sf-600/30"><i class="fa-solid fa-gauge w-4 text-center text-slate-500"></i>Dashboard Saya</a>
+                            <a href="{{ route('shop') }}?open_account=pesanan" onclick="if(typeof openAccount !== 'undefined') { event.preventDefault(); openAccount('pesanan'); }" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-sf-600/30"><i class="fa-solid fa-box w-4 text-center text-slate-500"></i>Pesanan Saya</a>
+                            <a href="{{ route('shop') }}?open_account=profil" onclick="if(typeof openAccount !== 'undefined') { event.preventDefault(); openAccount('profil'); }" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-sf-600/30"><i class="fa-solid fa-user-gear w-4 text-center text-slate-500"></i>Edit Profil</a>
                         </div>
                         <div class="border-t border-sf-600/20 py-1">
                             <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-rose-400 hover:bg-rose-500/10"><i class="fa-solid fa-right-from-bracket w-4 text-center"></i>Keluar</button></form>
@@ -63,7 +64,7 @@
             <button onclick="openAuthModal('login');toggleMobileMenu();" class="block w-full text-left px-4 py-3 text-sm font-semibold text-brand-400 hover:bg-brand-500/10 rounded-xl"><i class="fa-solid fa-right-to-bracket mr-2"></i>Masuk / Daftar</button>
             @endguest
             @auth
-            <a href="{{ route('pelanggan.pesanan') }}" onclick="toggleMobileMenu()" class="block px-4 py-3 text-sm font-medium text-slate-300 hover:bg-sf-700/50 rounded-xl"><i class="fa-solid fa-box mr-2"></i>Pesanan Saya</a>
+            <a href="{{ route('shop') }}?open_account=pesanan" onclick="toggleMobileMenu(); if(typeof openAccount !== 'undefined') { event.preventDefault(); openAccount('pesanan'); }" class="block px-4 py-3 text-sm font-medium text-slate-300 hover:bg-sf-700/50 rounded-xl"><i class="fa-solid fa-box mr-2"></i>Pesanan Saya</a>
             <form method="POST" action="{{ route('logout') }}" class="block">@csrf<button type="submit" class="w-full text-left px-4 py-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-xl"><i class="fa-solid fa-right-from-bracket mr-2"></i>Keluar</button></form>
             @endauth
         </div>

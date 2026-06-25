@@ -17,14 +17,14 @@ body{background-color:#121220;color:#e3e0f5}
 .custom-scrollbar::-webkit-scrollbar-track{background:#1C1C2D}
 .custom-scrollbar::-webkit-scrollbar-thumb{background:#2D2D3F;border-radius:10px}
 .bg-active-gradient{background:linear-gradient(90deg,#3b82f6 0%,#8b5cf6 100%)}
-@yield('additional-css')
 </style>
+@yield('additional-css')
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
 </head>
-<body class="font-body-md text-body-md overflow-hidden bg-background">
+<body class="font-body-md text-body-md bg-background">
 
 <!-- Sidebar -->
-<aside class="w-[260px] h-screen fixed left-0 top-0 bg-[#1c1c2d] flex flex-col z-[60] border-r border-outline-variant/20">
+<aside id="sidebar" class="w-[260px] h-screen fixed left-0 top-0 bg-[#1c1c2d] flex flex-col z-[60] border-r border-outline-variant/20 transition-all duration-300">
 <div class="p-6">
 <h1 class="text-2xl font-black tracking-tighter text-white">SALZA</h1>
 <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 mt-1">Admin Management</p>
@@ -51,14 +51,11 @@ body{background-color:#121220;color:#e3e0f5}
 <div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">inventory_2</span><span class="text-[13px] font-medium">Produk</span></div>
 <span class="material-symbols-outlined text-[16px]">chevron_right</span>
 </a>
-<a class="flex items-center justify-between {{ request()->routeIs('admin.slider') || request()->routeIs('admin.slider.*') ? 'text-white' : 'text-slate-400 hover:text-white' }} px-4 py-2.5 rounded-lg transition-all group" href="{{ route('admin.slider') }}">
-<div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">view_carousel</span><span class="text-[13px] font-medium">Slider</span></div>
+<a class="flex items-center justify-between {{ request()->routeIs('admin.shipping.*') ? 'text-white' : 'text-slate-400 hover:text-white' }} px-4 py-2.5 rounded-lg transition-all group" href="{{ route('admin.shipping.index') }}">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">local_shipping</span><span class="text-[13px] font-medium">Pengiriman</span></div>
 <span class="material-symbols-outlined text-[16px]">chevron_right</span>
 </a>
-<a class="flex items-center justify-between {{ request()->routeIs('admin.kupon') || request()->routeIs('admin.kupon.*') ? 'text-white' : 'text-slate-400 hover:text-white' }} px-4 py-2.5 rounded-lg transition-all group" href="{{ route('admin.kupon') }}">
-<div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">confirmation_number</span><span class="text-[13px] font-medium">Kupon</span></div>
-<span class="material-symbols-outlined text-[16px]">chevron_right</span>
-</a>
+
 
 <!-- Kelola Pesanan -->
 <div class="px-4 py-3 mt-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Kelola Pesanan</div>
@@ -126,37 +123,70 @@ body{background-color:#121220;color:#e3e0f5}
 <span class="material-symbols-outlined text-[16px]">chevron_right</span>
 </a>
 </nav>
-<div class="p-4 border-t border-outline-variant/20 flex items-center justify-around text-slate-500">
-<span class="material-symbols-outlined cursor-pointer hover:text-white text-[18px]">settings</span>
-<span class="material-symbols-outlined cursor-pointer hover:text-white text-[18px]">mail</span>
-<span class="material-symbols-outlined cursor-pointer hover:text-white text-[18px]">lock</span>
-</div>
 </aside>
 
 <!-- Main Content -->
-<main class="pl-[260px] min-h-screen flex flex-col">
+<main id="main-content" class="pl-[260px] min-h-screen flex flex-col transition-all duration-300">
 <!-- Header -->
 <header class="h-[70px] flex justify-between items-center px-8">
 <div class="flex items-center gap-6">
-<span class="material-symbols-outlined text-slate-400 cursor-pointer">menu</span>
-<span class="material-symbols-outlined text-slate-400 cursor-pointer">fullscreen</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer" onclick="toggleSidebar()">menu</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer" onclick="toggleFullscreen()">fullscreen</span>
 </div>
 <div class="flex items-center gap-6">
-<div class="flex items-center gap-3 group cursor-pointer">
-<img alt="Profile" class="w-8 h-8 rounded-full border border-indigo-500/30 object-cover" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'Admin') }}&background=6366f1&color=fff"/>
-</div>
-<form method="POST" action="{{ route('logout') }}">
-@csrf
-<a class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group cursor-pointer" onclick="this.closest('form').submit()">
-<span class="material-symbols-outlined text-[20px] group-hover:translate-x-0.5 transition-transform">logout</span>
-<span class="text-[13px] font-medium">Keluar</span>
-</a>
-</form>
+    <!-- Notification Badge -->
+    <div id="admin-notification-badge" class="relative cursor-pointer group flex items-center justify-center mr-2">
+        <a href="{{ route('admin.pesanan.masuk') }}" onclick="event.preventDefault(); navigateTo('{{ route('admin.pesanan.masuk') }}')">
+            <span class="material-symbols-outlined hover:text-white text-[22px] text-slate-400">mail</span>
+        </a>
+        @if(($pendingOrdersCount ?? 0) > 0)
+            <span class="absolute -top-1.5 -right-1.5 flex h-5 min-w-[20px] px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-lg shadow-rose-500/40">
+                {{ $pendingOrdersCount }}
+            </span>
+        @endif
+    </div>
+
+    <!-- Profile Dropdown Container -->
+    <div class="relative">
+        <button id="admin-profile-btn" onclick="toggleAdminProfileDropdown()" class="flex items-center gap-2 focus:outline-none group">
+            <img alt="Profile" class="w-8 h-8 rounded-full border border-indigo-500/30 object-cover hover:border-indigo-400 transition-all" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'Admin') }}&background=6366f1&color=fff"/>
+            <span class="text-xs text-slate-400 group-hover:text-white transition-colors font-medium">{{ Auth::user()->name ?? 'Admin' }}</span>
+            <span class="material-symbols-outlined text-[16px] text-slate-500 group-hover:text-white transition-colors">expand_more</span>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div id="admin-profile-dropdown" class="hidden absolute right-0 mt-2.5 w-48 bg-[#1c1c2d] border border-outline-variant/30 rounded-xl shadow-2xl z-[70] py-1.5 overflow-hidden">
+            <div class="px-4 py-2 border-b border-outline-variant/30">
+                <p class="text-xs font-bold text-white truncate">{{ Auth::user()->name ?? 'Admin' }}</p>
+                <p class="text-[10px] text-slate-500 truncate mt-0.5">{{ Auth::user()->email ?? 'admin@salza.com' }}</p>
+            </div>
+            
+            <a href="{{ route('admin.dashboard') }}" onclick="event.preventDefault(); navigateTo('{{ route('admin.dashboard') }}'); closeAdminProfileDropdown()" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors">
+                <span class="material-symbols-outlined text-[16px]">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            
+            <a href="{{ route('admin.profile.edit') }}" onclick="event.preventDefault(); navigateTo('{{ route('admin.profile.edit') }}'); closeAdminProfileDropdown()" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-white hover:bg-slate-700/50 transition-colors">
+                <span class="material-symbols-outlined text-[16px]">edit</span>
+                <span>Edit Profil</span>
+            </a>
+
+            <div class="border-t border-outline-variant/30 mt-1.5 pt-1.5">
+                <form method="POST" action="{{ route('logout') }}" id="dropdown-logout-form">
+                    @csrf
+                    <button type="button" onclick="if(confirm('Apakah Anda yakin ingin keluar?')) document.getElementById('dropdown-logout-form').submit()" class="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-rose-500/10 transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">logout</span>
+                        <span>Keluar</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 </header>
 
 <!-- Content Area -->
-<div class="flex-1 p-8 overflow-y-auto custom-scrollbar">
+<div id="admin-content-area" class="flex-1 p-8">
 
 {{-- Flash Message --}}
 @if(session('success'))
@@ -170,7 +200,9 @@ body{background-color:#121220;color:#e3e0f5}
 </div>
 @endif
 
+<div id="admin-dynamic-content">
 @yield('content')
+</div>
 
 </div>
 
@@ -185,7 +217,194 @@ body{background-color:#121220;color:#e3e0f5}
 const flash=document.getElementById('flash-msg');
 if(flash){setTimeout(()=>{flash.style.transition='opacity .4s,transform .4s';flash.style.opacity='0';flash.style.transform='translateY(-10px)';setTimeout(()=>flash.remove(),400)},4000)}
 function togglePesanan(){const s=document.getElementById('pesanan-submenu'),a=document.getElementById('pesanan-arrow'),h=s.classList.contains('hidden');if(h){s.classList.remove('hidden');a.style.transform='rotate(180deg)'}else{s.classList.add('hidden');a.style.transform='rotate(0deg)'}}
-@yield('additional-js')
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    if (sidebar && mainContent) {
+        if (sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.remove('-translate-x-full');
+            mainContent.classList.add('pl-[260px]');
+            mainContent.classList.remove('pl-0');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            mainContent.classList.remove('pl-[260px]');
+            mainContent.classList.add('pl-0');
+        }
+    }
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Error enabling fullscreen: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+function toggleAdminProfileDropdown() {
+    const dropdown = document.getElementById('admin-profile-dropdown');
+    if (dropdown) dropdown.classList.toggle('hidden');
+}
+
+function closeAdminProfileDropdown() {
+    const dropdown = document.getElementById('admin-profile-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const btn = document.getElementById('admin-profile-btn');
+    const dropdown = document.getElementById('admin-profile-dropdown');
+    if (btn && dropdown && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
+
+// === LIGHTWEIGHT SPA ROUTER ===
+async function navigateTo(url, push = true) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            window.location.href = url;
+            return;
+        }
+        
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Swap content
+        const newContent = doc.getElementById('admin-dynamic-content');
+        const currentContent = document.getElementById('admin-dynamic-content');
+        if (newContent && currentContent) {
+            currentContent.innerHTML = newContent.innerHTML;
+        } else {
+            window.location.href = url;
+            return;
+        }
+        
+        // Swap notification badge
+        const newBadge = doc.getElementById('admin-notification-badge');
+        const currentBadge = document.getElementById('admin-notification-badge');
+        if (newBadge && currentBadge) {
+            currentBadge.innerHTML = newBadge.innerHTML;
+        }
+        
+        // Swap title
+        document.title = doc.title;
+        
+        // Update URL
+        if (push) {
+            history.pushState(null, '', url);
+        }
+        
+        // Update active sidebar styles
+        updateActiveSidebar(url);
+        
+        // Re-execute page-specific scripts
+        executePageScripts(doc);
+        
+        // Scroll page back to top
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        
+    } catch (error) {
+        console.error('SPA navigation failed:', error);
+        window.location.href = url;
+    }
+}
+
+function updateActiveSidebar(targetUrl) {
+    const parsedUrl = new URL(targetUrl);
+    const path = parsedUrl.pathname;
+    
+    const sidebarLinks = document.querySelectorAll('aside nav a');
+    sidebarLinks.forEach(link => {
+        const hrefAttr = link.getAttribute('href');
+        if (!hrefAttr) return;
+        
+        const linkUrl = new URL(hrefAttr, window.location.origin);
+        const linkPath = linkUrl.pathname;
+        
+        const isActive = (path === linkPath) || 
+                         (linkPath !== '/admin/dashboard' && path.startsWith(linkPath));
+        
+        if (linkPath === '/admin/dashboard') {
+            if (isActive) {
+                link.className = "flex items-center gap-3 bg-active-gradient text-white shadow-lg shadow-indigo-500/20 px-4 py-2.5 rounded-lg transition-all";
+                link.querySelector('span:last-child').className = "text-[13px] font-semibold";
+            } else {
+                link.className = "flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2.5 rounded-lg transition-all";
+                link.querySelector('span:last-child').className = "text-[13px] font-medium";
+            }
+        } else if (link.closest('#pesanan-submenu')) {
+            const spanIcon = link.querySelector('span:first-child');
+            if (isActive) {
+                link.className = "flex items-center gap-3 text-white font-medium px-4 py-2 rounded-lg text-[12px] transition-all";
+                if (spanIcon) spanIcon.textContent = 'arrow_forward';
+            } else {
+                link.className = "flex items-center gap-3 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-[12px] transition-all";
+                if (spanIcon) spanIcon.textContent = 'more_horiz';
+            }
+        } else {
+            if (isActive) {
+                link.className = "flex items-center justify-between text-white px-4 py-2.5 rounded-lg transition-all group";
+            } else {
+                link.className = "flex items-center justify-between text-slate-400 hover:text-white px-4 py-2.5 rounded-lg transition-all group";
+            }
+        }
+    });
+    
+    const isPesananActive = path.includes('/admin/pesanan/');
+    const submenu = document.getElementById('pesanan-submenu');
+    const arrow = document.getElementById('pesanan-arrow');
+    if (submenu && arrow) {
+        if (isPesananActive) {
+            submenu.classList.remove('hidden');
+            arrow.style.transform = 'rotate(180deg)';
+        } else {
+            submenu.classList.add('hidden');
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+}
+
+function executePageScripts(doc) {
+    const inlineScripts = Array.from(doc.querySelectorAll('script')).filter(s => !s.src);
+    if (inlineScripts.length > 0) {
+        const lastScript = inlineScripts[inlineScripts.length - 1];
+        const newScript = document.createElement('script');
+        let code = lastScript.textContent;
+        code = code.replace(/<script[^>]*>/gi, '').replace(/<\/script>/gi, '');
+        newScript.textContent = code;
+        document.body.appendChild(newScript);
+        newScript.remove();
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (!link) return;
+    
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    
+    const url = new URL(href, window.location.origin);
+    if (url.origin !== window.location.origin) return;
+    if (!url.pathname.includes('/admin') && url.pathname !== '/admin') return;
+    if (link.closest('form') || href.includes('logout')) return;
+    if (link.getAttribute('onclick') && link.getAttribute('onclick').includes('togglePesanan')) return;
+    
+    e.preventDefault();
+    navigateTo(url.href);
+});
+
+window.addEventListener('popstate', function() {
+    navigateTo(window.location.href, false);
+});
 </script>
+@yield('additional-js')
 </body>
 </html>

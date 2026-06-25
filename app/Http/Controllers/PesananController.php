@@ -97,6 +97,18 @@ class PesananController extends Controller
         return view('admin.pesanan.show', compact('pesanan'));
     }
 
+    private function kurangiStok(Pesanan $pesanan)
+    {
+        foreach ($pesanan->items as $item) {
+            if ($item->produk) {
+                if ($item->produk->stock < $item->quantity) {
+                    throw new \Exception("Stok produk '{$item->produk->name}' tidak mencukupi (Sisa: {$item->produk->stock}, Kebutuhan: {$item->quantity}).");
+                }
+                $item->produk->decrement('stock', $item->quantity);
+            }
+        }
+    }
+
     private function ubahStatus(Request $request, $id, string $nextStatus)
     {
         $pesanan = Pesanan::findOrFail($id);
@@ -109,6 +121,10 @@ class PesananController extends Controller
 
         DB::beginTransaction();
         try {
+            if ($nextStatus === 'dikonfirmasi') {
+                $this->kurangiStok($pesanan);
+            }
+            
             $pesanan->update(['status' => $nextStatus]);
             DB::commit();
 
@@ -135,5 +151,27 @@ class PesananController extends Controller
         }
         $pesanan->update(['status' => 'dibatalkan']);
         return redirect()->route('admin.pesanan.dibatalkan')->with('success', "Pesanan {$pesanan->invoice} berhasil dibatalkan");
+    }
+
+    public function aksiVerifikasiPembayaran(Request $request, $id)
+    {
+        $pesanan = Pesanan::findOrFail($id);
+        
+        DB::beginTransaction();
+        try {
+            $this->kurangiStok($pesanan);
+
+            $pesanan->update([
+                'payment_status' => 'paid',
+                'status'         => 'dikonfirmasi'
+            ]);
+            DB::commit();
+
+            return redirect()->route('admin.pesanan.dikonfirmasi')
+                ->with('success', "Pembayaran untuk pesanan {$pesanan->invoice} berhasil diverifikasi!");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }

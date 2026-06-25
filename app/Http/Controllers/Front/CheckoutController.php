@@ -50,8 +50,6 @@ class CheckoutController extends Controller
             'updated_at' => now(),
         ]);
 
-        $produk->decrement('stock', $request->jumlah);
-
         return redirect()->route('pesanan.sukses');
     }
 
@@ -60,18 +58,25 @@ class CheckoutController extends Controller
         $request->validate([
             'alamat'     => 'required|string|min:10',
             'provinsi'   => 'required|string',
+            'kota'       => 'required|string',
             'kurir'      => 'required|string',
             'ongkir'     => 'required|integer|min:0',
             'pembayaran' => 'required|string',
             'catatan'    => 'nullable|string',
             'coupon'     => 'nullable|string',
             'total'      => 'required|integer|min:1',
+            'cart_item_ids' => 'nullable|array',
+            'cart_item_ids.*' => 'integer|exists:carts,id',
         ]);
 
-        $items = Keranjang::with('produk')->where('user_id', Auth::id())->get();
+        $query = Keranjang::with('produk')->where('user_id', Auth::id());
+        if ($request->has('cart_item_ids') && is_array($request->cart_item_ids)) {
+            $query->whereIn('id', $request->cart_item_ids);
+        }
+        $items = $query->get();
 
         if ($items->isEmpty()) {
-            return response()->json(['message' => 'Keranjang kosong'], 422);
+            return response()->json(['message' => 'Pilih produk yang ingin dibeli'], 422);
         }
 
         $user = Auth::user();
@@ -86,22 +91,33 @@ class CheckoutController extends Controller
                     'message' => 'Produk tidak ditemukan atau sudah dihapus. Silakan hapus dari keranjang.'
                 ], 422);
             }
+            if ($item->produk->stock < ($item->qty ?? $item->quantity)) {
+                return response()->json([
+                    'message' => 'Stok produk "' . $item->produk->name . '" tidak mencukupi (Tersedia: ' . $item->produk->stock . ').'
+                ], 422);
+            }
         }
 
         // 2. Jalankan transaction
         return DB::transaction(function () use ($request, $items, $user) {
+            $uniqueCode = 0;
+            $total = (int) $request->total;
+            if ($request->pembayaran === 'transfer') {
+                $uniqueCode = rand(100, 999);
+                $total += $uniqueCode;
+            }
             
             $order = Order::create([
                 'user_id'          => $user->id,
                 'invoice'          => 'INV-' . strtoupper(Str::random(10)),
-                'total'            => (int) $request->total,
-                
+                'total'            => $total,
+                'unique_code'      => $uniqueCode,
                 'payment_method'   => $request->pembayaran ?? 'cod',
                 'payment_status'   => $request->pembayaran === 'cod' ? 'pending' : 'unpaid',
                 'status'           => 'menunggu',
                 'shipping_name'    => $user->name,
                 'shipping_phone'   => $user->phone ?? '-',
-                'shipping_address' => $request->alamat . ', ' . $request->provinsi,
+                'shipping_address' => $request->alamat . ', ' . ucwords(str_replace('-', ' ', $request->kota)) . ', ' . ucwords(str_replace('-', ' ', $request->provinsi)),
                 'notes'            => $request->catatan ?? null,
             ]);
 
@@ -121,11 +137,13 @@ class CheckoutController extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-
-                $item->produk->decrement('stock', ($item->qty ?? $item->quantity)); 
             }
 
-            Keranjang::where('user_id', $user->id)->delete();
+            if ($request->has('cart_item_ids') && is_array($request->cart_item_ids)) {
+                Keranjang::whereIn('id', $request->cart_item_ids)->delete();
+            } else {
+                Keranjang::where('user_id', $user->id)->delete();
+            }
 
             if ($request->pembayaran !== 'cod') {
                 $simulatedVa = null;
@@ -150,5 +168,37 @@ class CheckoutController extends Controller
                 'data'    => ['code' => $order->invoice],
             ]);
         });
+    }
+
+    public function uploadBukti(Request $request, $id)
+    {
+        $request->validate([
+            'bukti' => 'required|image|mimes:jpeg,png,jpg,webp|max:3072',
+        ]);
+
+        $order = Order::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+
+        if ($request->hasFile('bukti')) {
+            // Hapus file lama jika ada
+            if ($order->payment_proof) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($order->payment_proof);
+            }
+
+            $path = $request->file('bukti')->store('bukti_pembayaran', 'public');
+            $order->update([
+                'payment_proof' => $path,
+                'payment_status' => 'menunggu_verifikasi',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bukti pembayaran berhasil diunggah. Silakan tunggu konfirmasi dari kami.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'File bukti pembayaran tidak ditemukan.',
+        ], 400);
     }
 }

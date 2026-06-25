@@ -41,18 +41,19 @@ class AuthController extends Controller
             'email'    => 'required|email|unique:users',
             'password' => 'required|min:8|confirmed',
             'phone'    => 'nullable|string|max:20',
+            'whatsapp' => 'nullable|string|max:20',
         ]);
 
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'phone'    => $request->phone,
+            'phone'    => $request->phone ?? $request->whatsapp,
             'role'     => 'pelanggan',
         ]);
 
         Auth::login($user);
-        return redirect()->route('pelanggan.dashboard')->with('success', 'Akun berhasil dibuat!');
+        return redirect()->route('shop')->with('success', 'Akun berhasil dibuat!');
     }
 
     public function logout(Request $request)
@@ -69,7 +70,7 @@ class AuthController extends Controller
 
         $routes = [
             'admin'     => 'admin.dashboard',
-            'pelanggan' => 'pelanggan.dashboard',
+            'pelanggan' => 'shop',
             'penjual'   => 'shop',
             'pembeli'   => 'shop',
         ];

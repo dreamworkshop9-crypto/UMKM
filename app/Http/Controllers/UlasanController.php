@@ -48,4 +48,63 @@ class UlasanController extends Controller
             'message' => "Ulasan berhasil dihapus",
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'pesanan_id' => 'required|integer|exists:pesanans,id',
+            'rating'     => 'required|integer|min:1|max:5',
+            'review'     => 'required|string|min:5|max:1000',
+        ]);
+
+        if (!auth()->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi habis, silakan login ulang.'
+            ], 401);
+        }
+
+        $order = \App\Models\Order::where('id', $request->pesanan_id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan tidak ditemukan atau bukan milik Anda.'
+            ], 404);
+        }
+
+        if ($order->status !== 'selesai') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda hanya bisa memberikan ulasan jika pesanan sudah selesai (diterima).'
+            ], 422);
+        }
+
+        $existing = Ulasan::where('pesanan_id', $order->id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda sudah memberikan ulasan untuk pesanan ini.'
+            ], 422);
+        }
+
+        $ulasan = Ulasan::create([
+            'pesanan_id' => $order->id,
+            'user_id'    => auth()->id(),
+            'rating'     => $request->rating,
+            'review'     => $request->review,
+            'status'     => 'aktif',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Terima kasih! Ulasan Anda berhasil dikirim.',
+            'data' => $ulasan
+        ]);
+    }
 }

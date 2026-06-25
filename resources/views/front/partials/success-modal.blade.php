@@ -7,7 +7,7 @@
         <p class="text-sm text-slate-400 mb-1">Pembayaran telah dikonfirmasi.</p>
         <p class="text-sm text-slate-400 mb-4">Kode pesanan:</p>
         <div class="bg-sf-700/50 border border-sf-600/20 rounded-xl p-4 mb-6"><p id="invoice-number" class="text-2xl font-black text-brand-400 tracking-wider font-mono">SAL-000000</p></div>
-        <a href="{{ route('pelanggan.pesanan') }}" class="block w-full py-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-white font-bold rounded-2xl transition-all mb-3">Lihat Pesanan Saya</a>
+        <button onclick="closeSuccessModal(); openAccount('pesanan');" class="block w-full py-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-white font-bold rounded-2xl transition-all mb-3">Lihat Pesanan Saya</button>
         <button onclick="closeSuccessModal()" class="w-full py-3.5 border border-sf-600/40 hover:border-sf-500 text-slate-300 hover:text-white font-medium rounded-2xl transition-all">Tutup</button>
     </div>
 </div>

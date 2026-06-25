@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Kategori;
+use App\Models\Order;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class FrontController extends Controller
 {
@@ -24,9 +27,18 @@ class FrontController extends Controller
                         ->take(12)
                         ->get();
 
+        $orders = [];
+        if (Auth::check()) {
+            $orders = Order::where('user_id', Auth::id())
+                ->with(['items.produk', 'ulasan'])
+                ->latest()
+                ->get();
+        }
+
         return view('front.landing', [
             'kategori'    => $kategori,
             'produk'      => $produk,
+            'orders'      => $orders,
             'provinsi'    => $this->provinsiList(),
             'kurir'       => ['jne' => 'JNE', 'jnt' => 'J&T', 'sicepat' => 'SiCepat'],
             'ongkirRates' => $this->ongkirRates(),
@@ -76,8 +88,8 @@ class FrontController extends Controller
                 'price'       => $produk->price,
                 'old_price'   => $produk->old_price,
                 'stock'       => $produk->stock,
-                'sizes'       => [],
-                'colors'      => [],
+                'sizes'       => $produk->sizes ?? [],
+                'colors'      => $produk->colors ?? [],
                 'rating'      => 0,
                 'terjual'     => 0,
                 'is_active'   => $produk->is_active,
@@ -88,35 +100,139 @@ class FrontController extends Controller
         ]);
     }
 
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $user = Auth::user();
+        $user->update([
+            'name'  => $request->name,
+            'phone' => $request->phone,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diperbarui.',
+            'user'    => [
+                'name'  => $user->name,
+                'phone' => $user->phone,
+            ]
+        ]);
+    }
+
     private function provinsiList(): array
     {
         return [
-            'jawa-barat'   => 'Jawa Barat',
-            'jawa-tengah'  => 'Jawa Tengah',
-            'jawa-timur'   => 'Jawa Timur',
-            'dki-jakarta'  => 'DKI Jakarta',
-            'banten'       => 'Banten',
-            'sumatera'     => 'Sumatera',
-            'kalimantan'   => 'Kalimantan',
-            'sulawesi'     => 'Sulawesi',
-            'bali-ntt-ntb' => 'Bali / NTT / NTB',
-            'papua-maluku' => 'Papua / Maluku',
+            'aceh'             => 'Aceh',
+            'sumatera-utara'   => 'Sumatera Utara',
+            'sumatera-barat'   => 'Sumatera Barat',
+            'riau'             => 'Riau',
+            'kepulauan-riau'   => 'Kepulauan Riau (Kepri)',
+            'jambi'            => 'Jambi',
+            'bengkulu'         => 'Bengkulu',
+            'sumatera-selatan' => 'Sumatera Selatan',
+            'bangka-belitung'  => 'Kepulauan Bangka Belitung',
+            'lampung'          => 'Lampung',
+            'dki-jakarta'      => 'DKI Jakarta',
+            'banten'           => 'Banten',
+            'jawa-barat'       => 'Jawa Barat',
+            'jawa-tengah'      => 'Jawa Tengah',
+            'diy-yogyakarta'   => 'DI Yogyakarta',
+            'jawa-timur'       => 'Jawa Timur',
+            'bali'             => 'Bali',
+            'ntb'              => 'Nusa Tenggara Barat (NTB)',
+            'ntt'              => 'Nusa Tenggara Timur (NTT)',
+            'kalimantan-barat' => 'Kalimantan Barat',
+            'kalimantan-tengah'=> 'Kalimantan Tengah',
+            'kalimantan-selatan'=> 'Kalimantan Selatan',
+            'kalimantan-timur' => 'Kalimantan Timur',
+            'kalimantan-utara' => 'Kalimantan Utara',
+            'sulawesi-utara'   => 'Sulawesi Utara',
+            'gorontalo'        => 'Gorontalo',
+            'sulawesi-tengah'  => 'Sulawesi Tengah',
+            'sulawesi-barat'   => 'Sulawesi Barat',
+            'sulawesi-selatan' => 'Sulawesi Selatan',
+            'sulawesi-tenggara'=> 'Sulawesi Tenggara',
+            'maluku'           => 'Maluku',
+            'maluku-utara'     => 'Maluku Utara',
+            'papua-barat'      => 'Papua Barat',
+            'papua'            => 'Papua',
+            'papua-tengah'     => 'Papua Tengah',
+            'papua-pegunungan' => 'Papua Pegunungan',
+            'papua-selatan'    => 'Papua Selatan',
+            'papua-barat-daya' => 'Papua Barat Daya',
         ];
     }
 
     private function ongkirRates(): array
     {
-        return [
-            'jawa-barat'   => ['jne' => 15000, 'jnt' => 12000, 'sicepat' => 10000],
-            'jawa-tengah'  => ['jne' => 18000, 'jnt' => 15000, 'sicepat' => 13000],
-            'jawa-timur'   => ['jne' => 20000, 'jnt' => 17000, 'sicepat' => 14000],
-            'dki-jakarta'  => ['jne' => 10000, 'jnt' => 8000,  'sicepat' => 7000],
-            'banten'       => ['jne' => 12000, 'jnt' => 10000, 'sicepat' => 9000],
-            'sumatera'     => ['jne' => 30000, 'jnt' => 25000, 'sicepat' => 22000],
-            'kalimantan'   => ['jne' => 40000, 'jnt' => 35000, 'sicepat' => 30000],
-            'sulawesi'     => ['jne' => 45000, 'jnt' => 38000, 'sicepat' => 35000],
-            'bali-ntt-ntb' => ['jne' => 35000, 'jnt' => 30000, 'sicepat' => 25000],
-            'papua-maluku' => ['jne' => 60000, 'jnt' => 55000, 'sicepat' => 50000],
-        ];
+        $rates = \App\Models\ShippingRate::all();
+        $formatted = [];
+        foreach ($rates as $rate) {
+            $formatted[$rate->province_code][$rate->courier] = [
+                'cost' => $rate->cost,
+                'estimation' => $rate->estimation,
+            ];
+        }
+        return $formatted;
+    }
+
+    public function toggleWishlist(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:produks,id'
+        ]);
+
+        $user = Auth::user();
+        $wishlist = \App\Models\Wishlist::where('user_id', $user->id)
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($wishlist) {
+            $wishlist->delete();
+            $status = 'removed';
+        } else {
+            \App\Models\Wishlist::create([
+                'user_id' => $user->id,
+                'product_id' => $request->product_id
+            ]);
+            $status = 'added';
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'wishlist_status' => $status,
+            'count' => $user->wishlists()->count()
+        ]);
+    }
+
+    public function getWishlist()
+    {
+        $wishlists = \App\Models\Wishlist::where('user_id', Auth::id())
+            ->with(['product.category', 'product.brand'])
+            ->latest()
+            ->get();
+
+        $data = $wishlists->map(function ($w) {
+            if (!$w->product) return null;
+            return [
+                'id' => $w->id,
+                'product_id' => $w->product_id,
+                'name' => $w->product->name,
+                'price' => $w->product->price,
+                'formatted_price' => $w->product->price_formatted,
+                'thumbnail_url' => $w->product->thumbnail_url,
+                'category_name' => $w->product->category->name ?? '',
+                'brand_name' => $w->product->brand->name ?? 'UMKM Lokal',
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $data
+        ]);
     }
 }

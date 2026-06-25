@@ -7,8 +7,7 @@ use Illuminate\Support\Str;
  
 class OrderController extends Controller {
     public function index() {
-        $orders = Order::where('user_id',Auth::id())->with('items.product')->latest()->paginate(10);
-        return view('pages.orders', compact('orders'));
+        return redirect()->route('shop', ['open_account' => 'pesanan']);
     }
     public function checkout(Request $req) {
         $req->validate(['name'=>'required','phone'=>'required','address'=>'required','city'=>'required','postal_code'=>'required','payment_method'=>'required|in:cod,transfer']);
@@ -24,8 +23,8 @@ class OrderController extends Controller {
         return redirect()->route('order.index')->with('success','Pesanan berhasil dibuat!');
     }
     public function show($invoice) {
-        $order = Order::where('invoice',$invoice)->where('user_id',Auth::id())->with('items.product')->firstOrFail();
-        return view('pages.order-detail', compact('order'));
+        Order::where('invoice',$invoice)->where('user_id',Auth::id())->firstOrFail();
+        return redirect()->route('shop', ['open_account' => 'pesanan', 'open_order' => $invoice]);
     }
     public function track(Request $req) {
         $req->validate(['invoice'=>'required|string']);

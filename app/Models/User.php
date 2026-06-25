@@ -59,4 +59,14 @@ class User extends Authenticatable
     {
         return $this->role === 'pelanggan';
     }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

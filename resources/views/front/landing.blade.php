@@ -30,7 +30,7 @@
             </div>
             <div class="relative fade-up hidden lg:block">
                 <div class="relative z-10 float-anim">
-                    <img src="https://picsum.photos/seed/salza-hero-v3/600/500.jpg" alt="Sepatu Premium" class="w-full max-w-lg mx-auto rounded-3xl shadow-2xl shadow-black/40">
+                    <img src="{{ asset('images/default-product.png') }}" alt="Sepatu Premium" class="w-full max-w-lg mx-auto rounded-3xl shadow-2xl shadow-black/40">
                 </div>
                 <div class="absolute top-8 -left-4 glass-card rounded-2xl p-4 shadow-xl z-20" style="animation:float 3s ease-in-out infinite">
                     <div class="flex items-center gap-3"><div class="w-11 h-11 bg-brand-500/20 rounded-xl flex items-center justify-center"><i class="fa-solid fa-truck-fast text-brand-400"></i></div><div><p class="text-sm font-bold text-white">Gratis Ongkir</p><p class="text-xs text-slate-500">Min. belanja 200rb</p></div></div>
@@ -47,24 +47,21 @@
 <section class="py-12 border-t border-sf-600/15">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2" id="category-filter">
-            {{-- HAPUS TOMBOL "SEMUA" --}}
+            <button onclick="setCategory('semua')" data-cat="semua" class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-brand-500 text-white shadow-lg shadow-brand-500/20">
+                Semua
+            </button>
             
             @foreach($kategori as $index => $kat)
             <button onclick="setCategory('{{ $kat->slug }}')" data-cat="{{ $kat->slug }}" 
-                class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 
-                {{ $index === 0 ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' : 'bg-sf-700/50 text-slate-400 border border-sf-600/25 hover:border-brand-500/40 hover:text-white' }}">
+                class="cat-btn flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 bg-sf-700/50 text-slate-400 border border-sf-600/25 hover:border-brand-500/40 hover:text-white">
                 {{ $kat->name }}
             </button>
             @endforeach
         </div>
         
-        {{-- Script agar langsung memfilter kategori pertama saat halaman dibuka --}}
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const firstCat = document.querySelector('#category-filter .cat-btn');
-                if (firstCat) {
-                    setCategory(firstCat.dataset.cat);
-                }
+                setCategory('semua');
             });
         </script>
     </div>
@@ -88,7 +85,7 @@
             @endphp
             <div class="product-card bg-sf-700/40 rounded-2xl border border-sf-600/15 overflow-hidden card-lift img-zoom group fade-up {{ $index < 4 ? 'vis' : '' }}" data-name="{{ strtolower($p->name) }}" data-kategori="{{ $pKatSlug }}" data-umkm="{{ strtolower($pBrand) }}" style="{{ $index >= 4 ? 'transition-delay:'.$index*0.08.'s' : '' }}">
                 <div class="relative overflow-hidden cursor-pointer" onclick="openProductModal({{ $p->id }})">
-                    <img src="{{ $pGambar }}" alt="{{ $p->name }}" class="w-full h-56 object-cover" loading="lazy" onerror="this.src='https://picsum.photos/seed/shoe-{{ $p->id }}/400/400.jpg'">
+                    <img src="{{ $pGambar }}" alt="{{ $p->name }}" class="w-full h-56 object-cover" loading="lazy" onerror="this.src='{{ asset('images/default-product.png') }}'">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400"></div>
                     @if($pStok <= 5)<span class="absolute top-3 left-3 px-2.5 py-1 bg-rose-500/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg uppercase tracking-wide">Stok Terbatas</span>@endif
                     <span class="absolute top-3 right-3 px-2.5 py-1 bg-sf-900/80 backdrop-blur-sm text-slate-300 text-[10px] font-medium rounded-lg">{{ $p->category->name ?? '' }}</span>
@@ -127,7 +124,7 @@
         <div class="grid lg:grid-cols-2 gap-16 items-center">
             <div class="relative fade-up">
                 <div class="absolute -inset-4 bg-gradient-to-br from-brand-500/10 to-blue-500/5 rounded-3xl blur-2xl"></div>
-                <img src="https://picsum.photos/seed/salza-workshop-v3/600/500.jpg" alt="Workshop" class="relative w-full rounded-2xl shadow-2xl shadow-black/30">
+                <img src="{{ asset('images/default-product.png') }}" alt="Workshop" class="relative w-full rounded-2xl shadow-2xl shadow-black/30">
                 <div class="absolute -bottom-6 -right-6 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl p-6 shadow-xl shadow-brand-500/20"><p class="text-4xl font-black text-white">5+</p><p class="text-sm text-brand-200 font-medium">Tahun Melayani</p></div>
             </div>
             <div class="fade-up">

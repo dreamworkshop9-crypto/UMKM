@@ -1,338 +1,301 @@
 @extends('layouts.admin')
 
-@section('title', 'Laporan')
+@section('title', 'Laporan Penjualan')
 
 @section('additional-css')
 <style>
-.card-stat {
-    background: #1c1c2d;
-    border: 1px solid rgba(46, 46, 72, 0.4);
-    border-radius: 0.75rem;
-    padding: 20px 24px;
-    transition: all 0.2s;
-}
-.card-stat:hover { border-color: rgba(99, 102, 241, 0.3); }
-
-.chart-card {
-    background: #1c1c2d;
-    border: 1px solid rgba(46, 46, 72, 0.4);
-    border-radius: 0.75rem;
-    padding: 24px;
-}
-
-.tbl-wrapper {
-    background: #1c1c2d;
-    border: 1px solid rgba(46, 46, 72, 0.4);
-    border-radius: 0.75rem;
-    overflow: hidden;
-}
-.tbl-wrapper table { width: 100%; border-collapse: collapse; }
-.tbl-wrapper thead { background: rgba(46, 46, 72, 0.3); }
-.tbl-wrapper th {
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #64748b;
-}
-.tbl-wrapper td {
-    padding: 12px 16px;
-    font-size: 13px;
-    color: #cbd5e1;
-    border-top: 1px solid rgba(46, 46, 72, 0.3);
-}
-.tbl-wrapper tbody tr { transition: background 0.15s; }
-.tbl-wrapper tbody tr:hover { background: rgba(99, 102, 241, 0.04); }
-
-.filter-select {
-    background: #121220;
-    border: 1px solid rgba(46,46,72,0.4);
-    border-radius: 0.5rem;
-    padding: 9px 14px;
-    color: #cbd5e1;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.2s;
-}
-.filter-select:focus { border-color: rgba(99,102,241,0.5); }
-.filter-select option { background: #1c1c2d; }
-
-.filter-input {
-    background: #121220;
-    border: 1px solid rgba(46,46,72,0.4);
-    border-radius: 0.5rem;
-    padding: 9px 14px;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-    caret-color: #6366f1;
-}
-.filter-input:focus { border-color: rgba(99,102,241,0.5); }
-.filter-input::-webkit-calendar-picker-indicator { filter: invert(1); }
-
-.btn-filter {
-    padding: 9px 20px;
-    border-radius: 0.5rem;
-    font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.15s;
-}
-.btn-filter:hover { opacity: 0.9; }
-
-.chart-toggle {
-    display: inline-flex;
-    background: #121220;
-    border: 1px solid rgba(46,46,72,0.4);
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
-.chart-toggle button {
-    padding: 7px 16px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #64748b;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-.chart-toggle button.active {
-    background: rgba(99,102,241,0.15);
-    color: #818cf8;
-}
-
-.badge-status-laporan {
-    display: inline-flex;
-    padding: 3px 10px;
-    border-radius: 9999px;
-    font-size: 11px;
-    font-weight: 600;
-}
-.bs-menunggu       { background: rgba(59,130,246,0.12); color: #60a5fa; }
-.bs-dikonfirmasi{ background: rgba(168,85,247,0.12); color: #c084fc; }
-.bs-dikemas     { background: rgba(234,179,8,0.12); color: #facc15; }
-.bs-dikirim     { background: rgba(6,182,212,0.12); color: #22d3ee; }
-.bs-diperjalanan{ background: rgba(249,115,22,0.12); color: #fb923c; }
-.bs-selesai     { background: rgba(34,197,94,0.12); color: #4ade80; }
-.bs-dibatalkan  { background: rgba(239,68,68,0.12); color: #f87171; }
-
-.no-data { padding: 40px 20px; text-align: center; color: #475569; font-size: 13px; }
-#customRange { display: none; }
-#customRange.show { display: flex; }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="bg-[#1c1c2d] rounded-xl border border-outline-variant/20 overflow-hidden">  
-
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-xl font-bold text-white">Laporan</h1>
-            <p class="text-[12px] text-slate-500 mt-1">{{ $labelPeriode }}</p>
-        </div>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-black text-white">Laporan Penjualan</h1>
+        <p class="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+            {{ $labelPeriode }}
+        </p>
     </div>
-
-    <div class="flex flex-wrap items-end gap-3 mb-6">
-        <div>
-            <label class="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Periode</label>
-            <select class="filter-select" id="filterPeriode" onchange="toggleCustom()">
+    
+    <!-- Filter Toolbar -->
+    <div class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-col">
+            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Periode</label>
+            <select class="bg-[#1c1c2d] border border-outline-variant/30 rounded-xl px-4 py-2 text-slate-300 text-[13px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-colors" id="filterPeriode" onchange="toggleCustom()">
                 <option value="hari_ini" {{ $periode === 'hari_ini' ? 'selected' : '' }}>Hari Ini</option>
                 <option value="minggu_ini" {{ $periode === 'minggu_ini' ? 'selected' : '' }}>Minggu Ini</option>
                 <option value="bulan_ini" {{ $periode === 'bulan_ini' ? 'selected' : '' }}>Bulan Ini</option>
                 <option value="bulan_lalu" {{ $periode === 'bulan_lalu' ? 'selected' : '' }}>Bulan Lalu</option>
                 <option value="tahun_ini" {{ $periode === 'tahun_ini' ? 'selected' : '' }}>Tahun Ini</option>
-                <option value="custom" {{ $periode === 'custom' ? 'selected' : '' }}>Custom</option>
+                <option value="custom" {{ $periode === 'custom' ? 'selected' : '' }}>Custom Range</option>
             </select>
         </div>
-        <div id="customRange" class="{{ $periode === 'custom' ? 'show' : '' }} items-end gap-3">
-            <div>
-                <label class="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Dari</label>
-                <input type="date" class="filter-input" id="filterDari" value="{{ $dari ?? '' }}"/>
+        <div id="customRange" class="{{ $periode === 'custom' ? 'flex' : 'hidden' }} items-center gap-3">
+            <div class="flex flex-col">
+                <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Dari</label>
+                <input type="date" class="bg-[#1c1c2d] border border-outline-variant/30 rounded-xl px-4 py-2 text-white text-[13px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors" id="filterDari" value="{{ $dari ?? '' }}"/>
             </div>
-            <div>
-                <label class="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Sampai</label>
-                <input type="date" class="filter-input" id="filterSampai" value="{{ $sampai ?? '' }}"/>
+            <div class="flex flex-col">
+                <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Sampai</label>
+                <input type="date" class="bg-[#1c1c2d] border border-outline-variant/30 rounded-xl px-4 py-2 text-white text-[13px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors" id="filterSampai" value="{{ $sampai ?? '' }}"/>
             </div>
         </div>
-        <button class="btn-filter" onclick="applyFilter()">
-            <span class="flex items-center gap-1.5">
+        <div class="flex flex-col justify-end pt-[22px]">
+            <button class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold text-[13px] rounded-xl px-5 py-2 transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-500/10" onclick="applyFilter()">
                 <span class="material-symbols-outlined text-[16px]">filter_list</span>
                 Terapkan
-            </span>
-        </button>
-    </div>
-
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="card-stat">
-            <p class="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Total Pendapatan</p>
-            <p class="text-2xl font-bold text-emerald-400 mt-2">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</p>
-        </div>
-        <div class="card-stat">
-            <p class="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Total Pesanan</p>
-            <p class="text-2xl font-bold text-white mt-2">{{ number_format($totalPesanan) }}</p>
-        </div>
-        <div class="card-stat">
-            <p class="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Pesanan Selesai</p>
-            <p class="text-2xl font-bold text-indigo-400 mt-2">{{ number_format($pesananSelesai) }}</p>
-        </div>
-        <div class="card-stat">
-            <p class="text-[11px] text-slate-500 font-medium uppercase tracking-wider">Pesanan Dibatalkan</p>
-            <p class="text-2xl font-bold text-red-400 mt-2">{{ number_format($pesananDibatalkan) }}</p>
+            </button>
         </div>
     </div>
+</div>
 
-    <div class="chart-card mb-6">
-        <div class="flex items-center justify-between mb-5">
-            <h2 class="text-[14px] font-semibold text-white">Grafik Penjualan</h2>
-            <div class="flex items-center gap-3">
-                <div class="chart-toggle">
-                    <button class="active" id="btnBulanan" onclick="loadChart('bulanan')">Bulanan</button>
-                    <button id="btnHarian" onclick="loadChart('harian')">Harian (30 hari)</button>
-                </div>
-                <select class="filter-select" id="filterTahun" onchange="loadChart('bulanan')" style="padding:7px 10px;font-size:12px;">
-                    @for($y = now()->year; $y >= now()->year - 2; $y--)
-                    <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
-                    @endfor
-                </select>
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Stat 1: Pendapatan -->
+    <div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 p-6 shadow-xl hover:border-emerald-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Total Pendapatan</span>
+            <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400">
+                <span class="material-symbols-outlined text-[20px]">payments</span>
             </div>
         </div>
-        <div style="height:300px;position:relative;">
-            <canvas id="salesChart"></canvas>
-        </div>
-        <div class="flex items-center justify-center gap-6 mt-4">
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-sm" style="background:#818cf8"></span>
-                <span class="text-[12px] text-slate-400">Pendapatan (Rp)</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-sm" style="background:#22d3ee"></span>
-                <span class="text-[12px] text-slate-400">Jumlah Pesanan</span>
-            </div>
-        </div>
+        <p class="text-2xl font-black text-emerald-400">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="tbl-wrapper">
-            <div class="px-5 py-4 border-b border-outline-variant/20">
-                <h2 class="text-[14px] font-semibold text-white flex items-center gap-2">
-                    <span class="material-symbols-outlined text-amber-400 text-[18px]">trending_up</span>
-                    Produk Terlaris
-                </h2>
+    <!-- Stat 2: Total Pesanan -->
+    <div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 p-6 shadow-xl hover:border-indigo-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Total Pesanan</span>
+            <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400">
+                <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
             </div>
-            <table>
-                <thead><tr><th>#</th><th>Produk</th><th class="text-right">Qty Terjual</th><th class="text-right">Pendapatan</th></tr></thead>
+        </div>
+        <p class="text-2xl font-black text-white">{{ number_format($totalPesanan) }}</p>
+    </div>
+
+    <!-- Stat 3: Pesanan Selesai -->
+    <div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 p-6 shadow-xl hover:border-cyan-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Pesanan Selesai</span>
+            <div class="w-10 h-10 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-400">
+                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+            </div>
+        </div>
+        <p class="text-2xl font-black text-cyan-400">{{ number_format($pesananSelesai) }}</p>
+    </div>
+
+    <!-- Stat 4: Pesanan Dibatalkan -->
+    <div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 p-6 shadow-xl hover:border-red-500/30 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Pesanan Dibatalkan</span>
+            <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-400">
+                <span class="material-symbols-outlined text-[20px]">cancel</span>
+            </div>
+        </div>
+        <p class="text-2xl font-black text-red-400">{{ number_format($pesananDibatalkan) }}</p>
+    </div>
+</div>
+
+<!-- Sales Chart Card -->
+<div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 p-6 shadow-xl mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h3 class="text-base font-semibold text-white">Grafik Penjualan</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Pendapatan dan volume transaksi pesanan</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="bg-[#121220] border border-outline-variant/30 rounded-xl p-0.5 flex">
+                <button class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200" id="btnBulanan" onclick="loadChart('bulanan')">Bulanan</button>
+                <button class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200" id="btnHarian" onclick="loadChart('harian')">Harian (30 Hari)</button>
+            </div>
+            <select class="bg-[#121220] border border-outline-variant/30 rounded-xl px-3 py-1.5 text-slate-300 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer" id="filterTahun" onchange="loadChart('bulanan')">
+                @for($y = now()->year; $y >= now()->year - 2; $y--)
+                <option value="{{ $y }}" {{ $y == now()->year ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+        </div>
+    </div>
+    
+    <div class="h-[340px] relative w-full">
+        <canvas id="salesChart"></canvas>
+    </div>
+    
+    <div class="flex items-center justify-center gap-6 mt-6">
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+            <span class="text-xs text-slate-400">Pendapatan (Rp)</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-cyan-400"></span>
+            <span class="text-xs text-slate-400">Jumlah Pesanan</span>
+        </div>
+    </div>
+</div>
+
+<!-- Tables Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Table 1: Produk Terlaris -->
+    <div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 shadow-xl overflow-hidden">
+        <div class="px-6 py-5 border-b border-outline-variant/10 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-400 text-[20px]">trending_up</span>
+                Produk Terlaris
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-[#24243a]">
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider w-16">#</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Produk</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right w-32">Qty Terjual</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right w-40">Pendapatan</th>
+                    </tr>
+                </thead>
                 <tbody>
                     @forelse($produkTerlaris as $i => $p)
-                    <tr>
-                        <td class="text-slate-500">{{ $i + 1 }}</td>
-                        <td class="font-medium text-white">{{ $p['name'] }}</td>
-                        <td class="text-right">{{ $p['qty'] }}</td>
-                        <td class="text-right text-emerald-400">Rp {{ number_format($p['revenue'], 0, ',', '.') }}</td>
+                    <tr class="border-b border-outline-variant/5 hover:bg-[#1a1a2e] transition-colors">
+                        <td class="px-6 py-4 text-[13px] text-slate-500 font-mono">{{ $i + 1 }}</td>
+                        <td class="px-6 py-4 text-[13px] font-medium text-white">{{ $p['name'] }}</td>
+                        <td class="px-6 py-4 text-[13px] text-slate-300 text-right font-semibold">{{ $p['qty'] }}</td>
+                        <td class="px-6 py-4 text-[13px] text-emerald-400 text-right font-semibold">Rp {{ number_format($p['revenue'], 0, ',', '.') }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="4" class="no-data">Belum ada data</td></tr>
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-500 text-[13px]">
+                            <div class="flex flex-col items-center gap-2 py-4">
+                                <span class="material-symbols-outlined text-[40px] opacity-10">inbox</span>
+                                <span>Belum ada data penjualan produk</span>
+                            </div>
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Table 2: Pesanan Per Status -->
+    <div class="bg-[#1c1c2d] rounded-2xl border border-outline-variant/20 shadow-xl overflow-hidden flex flex-col justify-between">
+        <div>
+            <div class="px-6 py-5 border-b border-outline-variant/10 flex items-center justify-between">
+                <h3 class="text-base font-semibold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-indigo-400 text-[20px]">pie_chart</span>
+                    Pesanan Per Status
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-[#24243a]">
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right w-32">Jumlah</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right w-32">Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($pesananPerStatus as $ps)
+                        <tr class="border-b border-outline-variant/5 hover:bg-[#1a1a2e] transition-colors">
+                            <td class="px-6 py-4">
+                                @php
+                                    $bc = [
+                                        'menunggu' => 'bg-blue-500/15 text-blue-400 border-blue-500/20',
+                                        'dikonfirmasi' => 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+                                        'dikemas' => 'bg-purple-500/15 text-purple-400 border-purple-500/20',
+                                        'dikirim' => 'bg-cyan-500/15 text-cyan-400 border-cyan-500/20',
+                                        'diperjalanan' => 'bg-orange-500/15 text-orange-400 border-orange-500/20',
+                                        'selesai' => 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+                                        'dibatalkan' => 'bg-red-500/15 text-red-400 border-red-500/20'
+                                    ];
+                                    $bl = [
+                                        'menunggu' => 'Menunggu',
+                                        'dikonfirmasi' => 'Dikonfirmasi',
+                                        'dikemas' => 'Dikemas',
+                                        'dikirim' => 'Dikirim',
+                                        'diperjalanan' => 'Dalam Perjalanan',
+                                        'selesai' => 'Selesai',
+                                        'dibatalkan' => 'Dibatalkan'
+                                    ];
+                                @endphp
+                                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border {{ $bc[$ps->status] ?? 'bg-slate-500/15 text-slate-400' }}">{{ $bl[$ps->status] ?? strtoupper($ps->status) }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-[13px] text-white font-semibold text-right">{{ $ps->total }}</td>
+                            <td class="px-6 py-4 text-[13px] text-slate-400 text-right">{{ $totalPesanan > 0 ? round(($ps->total / $totalPesanan) * 100, 1) : 0 }}%</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="3" class="px-6 py-12 text-center text-slate-500 text-[13px]">
+                                <div class="flex flex-col items-center gap-2 py-4">
+                                    <span class="material-symbols-outlined text-[40px] opacity-10">inbox</span>
+                                    <span>Belum ada data status pesanan</span>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="tbl-wrapper">
-            <div class="px-5 py-4 border-b border-outline-variant/20">
-                <h2 class="text-[14px] font-semibold text-white flex items-center gap-2">
-                    <span class="material-symbols-outlined text-indigo-400 text-[18px]">pie_chart</span>
-                    Pesanan Per Status
-                </h2>
+        @if($pesananPerStatus->count() > 0)
+        <div class="px-6 py-5 border-t border-outline-variant/10">
+            <div class="flex items-center gap-1.5 h-3.5 rounded-full overflow-hidden bg-[#121220] p-0.5 border border-outline-variant/10">
+                @foreach($pesananPerStatus as $ps)
+                @php
+                $pct = $totalPesanan > 0 ? ($ps->total / $totalPesanan) * 100 : 0;
+                $colors = [
+                    'menunggu' => '#3b82f6',
+                    'dikonfirmasi' => '#f59e0b',
+                    'dikemas' => '#a855f7',
+                    'dikirim' => '#06b6d4',
+                    'diperjalanan' => '#f97316',
+                    'selesai' => '#10b981',
+                    'dibatalkan' => '#ef4444'
+                ];
+                $color = $colors[$ps->status] ?? '#64748b';
+                @endphp
+                <div style="width:{{ $pct }}%; background:{{ $color }};" class="h-full first:rounded-l-full last:rounded-r-full transition-all duration-500" title="{{ $bl[$ps->status] ?? $ps->status }}: {{ round($pct,1) }}%"></div>
+                @endforeach
             </div>
-            <table>
-                <thead><tr><th>Status</th><th class="text-right">Jumlah</th><th class="text-right">Persentase</th></tr></thead>
-                <tbody>
-                    @forelse($pesananPerStatus as $ps)
-                    <tr>
-                        <td>
-                            <span class="badge-status-laporan bs-{{ $ps->status }}">
-                                {{ ucfirst(str_replace('_', ' ', $ps->status)) }}
-                            </span>
-                        </td>
-                        <td class="text-right font-medium text-white">{{ $ps->total }}</td>
-                        <td class="text-right text-slate-400">{{ $totalPesanan > 0 ? round(($ps->total / $totalPesanan) * 100, 1) : 0 }}%</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="3" class="no-data">Belum ada data</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-            @if($pesananPerStatus->count() > 0)
-            <div class="px-5 py-3 border-t border-outline-variant/20">
-                <div class="flex items-center gap-2 h-3 rounded-full overflow-hidden bg-[#121220]">
-                    @foreach($pesananPerStatus as $ps)
-                    @php
-                    $pct = $totalPesanan > 0 ? ($ps->total / $totalPesanan) * 100 : 0;
-                    $colors = ['masuk'=>'#3b82f6','dikonfirmasi'=>'#a855f7','dikemas'=>'#eab308','dikirim'=>'#06b6d4','diperjalanan'=>'#f97316','selesai'=>'#22c55e','dibatalkan'=>'#ef4444'];
-                    $color = $colors[$ps->status] ?? '#64748b';
-                    @endphp
-                    <div style="width:{{ $pct }}%;background:{{ $color }};min-width:4px;" title="{{ ucfirst($ps->status) }}: {{ round($pct,1) }}%"></div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
         </div>
+        @endif
     </div>
 </div>
 @endsection
 
 @section('additional-js')
-// === PEMAKSAAN SCROLL VIA JS (Mengatasi bug Chart.js vs Flexbox) ===
-function forceScrollFix() {
-    var main = document.querySelector('main');
-    if (!main) return;
-    
-    // 1. Paksa main persis setinggi layar, tidak lebih
-    main.style.setProperty('height', '100vh', 'important');
-    main.style.setProperty('min-height', '0', 'important');
-    main.style.setProperty('max-height', '100vh', 'important');
-    main.style.setProperty('overflow', 'hidden', 'important');
-
-    // 2. Cari div content area (anak ke-2 dari main, setelah header)
-    var kids = main.children;
-    for (var i = 0; i < kids.length; i++) {
-        if (kids[i].classList.contains('flex-1')) {
-            kids[i].style.setProperty('min-height', '0', 'important');
-            kids[i].style.setProperty('flex', '1 1 0%', 'important');
-            kids[i].style.setProperty('overflow-y', 'auto', 'important');
-        }
-    }
-}
-
-// Jalankan beberapa kali (karena Chart.js load asynchronously dan merusak layout)
-setTimeout(forceScrollFix, 0);
-setTimeout(forceScrollFix, 100);
-setTimeout(forceScrollFix, 500);
-setTimeout(forceScrollFix, 1000);
-
+<script>
 // Chart.js CDN
-var s = document.createElement('script');
-s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
-document.head.appendChild(s);
-s.onload = function(){ 
-    loadChart('bulanan'); 
-    // Jalankan fix lagi setelah chart selesai render
-    setTimeout(forceScrollFix, 200); 
-};
+if (!window.Chart) {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+    document.head.appendChild(s);
+    s.onload = function(){ 
+        loadChart('bulanan'); 
+    };
+} else {
+    loadChart('bulanan');
+}
 
 var salesChart = null;
 
 function loadChart(tipe) {
-    document.getElementById('btnBulanan').classList.toggle('active', tipe === 'bulanan');
-    document.getElementById('btnHarian').classList.toggle('active', tipe === 'harian');
+    const btnBulanan = document.getElementById('btnBulanan');
+    const btnHarian = document.getElementById('btnHarian');
+    const isBulanan = tipe === 'bulanan';
+    
+    if (isBulanan) {
+        btnBulanan.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-md transition-all duration-200';
+        btnHarian.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all duration-200';
+    } else {
+        btnBulanan.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all duration-200';
+        btnHarian.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-md transition-all duration-200';
+    }
 
     var tahun = document.getElementById('filterTahun').value;
     var url = '{{ route("admin.laporan.chart") }}?tipe=' + tipe + '&tahun=' + tahun;
@@ -351,8 +314,8 @@ function loadChart(tipe) {
                         {
                             label: 'Pendapatan',
                             data: res.data.map(function(d){ return d.pendapatan }),
-                            backgroundColor: 'rgba(129, 140, 248, 0.3)',
-                            borderColor: '#818cf8',
+                            backgroundColor: 'rgba(99, 102, 241, 0.25)',
+                            borderColor: '#6366f1',
                             borderWidth: 2,
                             borderRadius: 6,
                             yAxisID: 'y',
@@ -396,10 +359,10 @@ function loadChart(tipe) {
                         }
                     },
                     scales: {
-                        x: { grid: { color: 'rgba(46,46,72,0.2)' }, ticks: { color: '#64748b', font: { size: 11 } } },
+                        x: { grid: { color: 'rgba(46,46,72,0.1)' }, ticks: { color: '#64748b', font: { size: 11 } } },
                         y: {
                             position: 'left',
-                            grid: { color: 'rgba(46,46,72,0.2)' },
+                            grid: { color: 'rgba(46,46,72,0.1)' },
                             ticks: {
                                 color: '#64748b', font: { size: 11 },
                                 callback: function(v) {
@@ -422,8 +385,14 @@ function loadChart(tipe) {
 function toggleCustom() {
     var v = document.getElementById('filterPeriode').value;
     var cr = document.getElementById('customRange');
-    if (v === 'custom') { cr.classList.add('show'); } 
-    else { cr.classList.remove('show'); applyFilter(); }
+    if (v === 'custom') {
+        cr.classList.remove('hidden');
+        cr.classList.add('flex');
+    } else {
+        cr.classList.add('hidden');
+        cr.classList.remove('flex');
+        applyFilter();
+    }
 }
 
 function applyFilter() {
@@ -436,4 +405,5 @@ function applyFilter() {
     }
     window.location.href = '{{ route("admin.laporan") }}?' + params.toString();
 }
+</script>
 @endsection

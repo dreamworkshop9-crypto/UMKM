@@ -25,18 +25,29 @@ class PaymentController extends Controller
         $txStatus = $status['transaction_status'];
 
         if (in_array($txStatus, ['capture', 'settlement'])) {
+            if ($order->status !== 'dikonfirmasi') {
+                foreach ($order->items as $item) {
+                    if ($item->produk) {
+                        $item->produk->decrement('stock', $item->quantity);
+                    }
+                }
+            }
             $order->update([
-                'status'        => 'dibayar',
-                'payment_type'  => $status['payment_type'] ?? null,
-                'paid_at'       => now(),
+                'status'         => 'dikonfirmasi',
+                'payment_status' => 'paid',
+                'payment_type'   => $status['payment_type'] ?? null,
+                'paid_at'        => now(),
             ]);
         } elseif ($txStatus === 'pending') {
-            $order->update(['status' => 'menunggu_pembayaran']);
+            $order->update([
+                'status'         => 'menunggu',
+                'payment_status' => 'unpaid'
+            ]);
         } elseif (in_array($txStatus, ['deny', 'expire', 'cancel'])) {
-            $order->update(['status' => 'gagal']);
-            foreach ($order->items as $item) {
-                $item->produk->increment('stock', $item->qty);
-            }
+            $order->update([
+                'status'         => 'dibatalkan',
+                'payment_status' => 'failed'
+            ]);
         }
 
         return response('OK', 200);

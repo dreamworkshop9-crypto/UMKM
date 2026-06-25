@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}"/>
     <title>@yield('title', 'SALZA - Toko Sepatu Online')</title>
+    <link rel="icon" href="{{ asset('image/waku.jpeg') }}?v=1.0.1" type="image/jpeg">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,11 +36,10 @@
             </div>
             <div class="flex items-center gap-4">
                 @auth
-                    <a href="{{ route('wishlist.index') }}" class="hover:text-purple-400 transition-colors"><i class="fa-regular fa-heart mr-1"></i> Wishlist</a>
                     <a href="{{ route('order.index') }}" class="hover:text-emerald-400 transition-colors"><i class="fa-solid fa-box-open mr-1"></i> Pesanan</a>
                     <button onclick="openTrack()" class="hover:text-amber-400 transition-colors"><i class="fa-solid fa-truck-fast mr-1"></i> Lacak</button>
                     <div class="w-px h-3 bg-slate-700"></div>
-                    <form action="{{ route('logout') }}" method="POST" class="inline">@csrf
+                    <form action="{{ route('logout') }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin keluar?')">@csrf
                         <button type="submit" class="hover:text-rose-400 transition-colors"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Keluar ({{ Auth::user()->name }})</button>
                     </form>
                 @else
@@ -56,9 +56,9 @@
     <header class="glass-nav sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex items-center justify-between h-20 gap-8">
-                <!-- Logo -->
-                <a href="{{ route('home') }}" class="text-2xl font-bold tracking-tighter text-white flex-shrink-0">
-                    SAL<span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-emerald-400">ZA</span>
+                <a href="{{ route('home') }}" class="text-2xl font-bold tracking-tighter text-white flex-shrink-0 flex items-center gap-2">
+                    <img src="{{ asset('image/waku.jpeg') }}" class="w-9 h-9 rounded-lg object-cover" alt="SALZA Logo">
+                    <span>SAL<span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-emerald-400">ZA</span></span>
                 </a>
 
                 <!-- Navigation -->
@@ -101,10 +101,7 @@
 
                     <!-- Icons -->
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('wishlist.index') }}" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-rose-400 transition-colors relative" title="Wishlist">
-                            <i class="fa-regular fa-heart text-lg"></i>
-                        </a>
-                        <a href="{{ route('cart.index') }}" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition-colors relative group" title="Keranjang">
+                        <a href="{{ url('/landing') }}" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition-colors relative group" title="Keranjang">
                             <i class="fa-solid fa-shopping-cart text-lg"></i>
                             <span id="cartCount" class="absolute 0 top-0 right-0 w-4 h-4 bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-slate-900 group-hover:border-slate-800 transition-colors">@auth{{ \App\Models\Cart::where('user_id',Auth::id())->sum('quantity') }}@else 0 @endauth</span>
                         </a>
@@ -357,7 +354,7 @@
     async function addToCart(productId, size = '', color = '', qty = 1) {
         @auth
         try {
-            const res = await fetch('{{ route("cart.add") }}', {
+            const res = await fetch('{{ route("api.keranjang.tambah") }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.csrfToken },
                 body: JSON.stringify({ product_id: productId, quantity: qty, size, color })
@@ -377,35 +374,7 @@
         @endauth
     }
 
-    async function toggleWishlist(productId, btn) {
-        @auth
-        try {
-            const res = await fetch('{{ route("wishlist.toggle") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.csrfToken },
-                body: JSON.stringify({ product_id: productId })
-            });
-            const data = await res.json();
-            showToast(data.message, 'success'); 
-            
-            // Visual toggle
-            const icon = btn.querySelector('i');
-            if(data.action === 'added') {
-                btn.classList.replace('text-slate-300', 'text-rose-500');
-                btn.classList.add('bg-rose-500/10', 'border-rose-500/30');
-                icon.classList.replace('fa-regular', 'fa-solid');
-            } else {
-                btn.classList.replace('text-rose-500', 'text-slate-300');
-                btn.classList.remove('bg-rose-500/10', 'border-rose-500/30');
-                icon.classList.replace('fa-solid', 'fa-regular');
-            }
-        } catch (e) {
-            showToast('Terjadi kesalahan jaringan', 'error');
-        }
-        @else
-        window.location.href = '{{ route("login") }}';
-        @endauth
-    }
+
 
     // Auto-remove standard alerts
     setTimeout(() => {

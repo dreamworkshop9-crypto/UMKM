@@ -8,15 +8,13 @@ use Illuminate\Support\Facades\Storage; // ← TAMBAHKAN INI
 class Product extends Model {
     use HasFactory;
     protected $table = 'produks';
-    protected $fillable = ['name','slug','description','price','old_price','stock','stok','harga','thumbnail','image','sku','weight','kategori_id','subcategory_id','subsubcategory_id','brand_id','is_active','is_new','is_best_seller'];
-    protected $casts = ['is_active'=>'boolean','is_new'=>'boolean','is_best_seller'=>'boolean','price'=>'integer','old_price'=>'integer'];
+    protected $fillable = ['name','slug','description','price','old_price','stock','stok','harga','thumbnail','image','sku','weight','kategori_id','subcategory_id','subsubcategory_id','brand_id','is_active','is_new','is_best_seller','sizes','colors'];
+    protected $casts = ['is_active'=>'boolean','is_new'=>'boolean','is_best_seller'=>'boolean','price'=>'integer','old_price'=>'integer','sizes'=>'array','colors'=>'array'];
     protected $appends = ['thumbnail_url', 'price_formatted'];
-    public function category()   { return $this->belongsTo(Category::class, 'kategori_id'); }
+    public function category()   { return $this->belongsTo(Kategori::class, 'kategori_id'); }
     public function brand()      { return $this->belongsTo(Brand::class); }
     public function images()     { return $this->hasMany(ProductImage::class); }
     public function variants()   { return $this->hasMany(ProductVariant::class); }
-    public function cartItems()  { return $this->hasMany(Cart::class); }
-    public function wishlists()  { return $this->hasMany(Wishlist::class); }
     public function orderItems() { return $this->hasMany(OrderItem::class); }
  
     public function getStokAttribute() {

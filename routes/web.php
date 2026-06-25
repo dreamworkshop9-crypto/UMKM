@@ -3,12 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\PelangganDashboardController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProdukController;
-use App\Http\Controllers\SliderController;
-use App\Http\Controllers\KuponController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Front\FrontController;
@@ -16,15 +13,12 @@ use App\Http\Controllers\Front\KeranjangController;
 use App\Http\Controllers\Front\CheckoutController;
 use App\Http\Controllers\Front\PaymentController;
 // → DITAMBAHKAN: Biar tidak tulis panjang2 di bawah
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\Admin\LaporanController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('shop');
 });
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -38,25 +32,17 @@ Route::get('/product/{id}/{slug}', [ProductController::class, 'show'])->name('pr
 Route::get('/home', function() { return redirect('/shop'); })->name('home');
 
 Route::middleware('auth')->group(function() {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
-    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
-
-    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
-
     Route::get('/order', [OrderController::class, 'index'])->name('order.index');
-    Route::post('/order/checkout', [OrderController::class, 'checkout'])->name('order.checkout');
     Route::get('/order/{invoice}', [OrderController::class, 'show'])->name('order.show');
+    Route::post('/ulasan', [App\Http\Controllers\UlasanController::class, 'store'])->name('ulasan.store');
 });
-Route::post('/order/track', [OrderController::class, 'track'])->name('order.track');
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::redirect('/', '/admin/dashboard');
     Route::redirect('/pesanan', '/admin/pesanan/masuk');
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [AdminDashboardController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
 
     // PESANAN — Halaman List (GET)
     Route::get('/pesanan/masuk',           [PesananController::class, 'masuk'])           ->name('pesanan.masuk');
@@ -77,6 +63,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/pesanan/{id}/diperjalanan',   [PesananController::class, 'aksiDiperjalanan'])   ->name('pesanan.aksi.diperjalanan');
     Route::post('/pesanan/{id}/selesai',        [PesananController::class, 'aksiSelesai'])        ->name('pesanan.aksi.selesai');
     Route::post('/pesanan/{id}/dibatalkan',     [PesananController::class, 'aksiDibatalkan'])     ->name('pesanan.aksi.dibatalkan');
+    Route::post('/pesanan/{id}/verifikasi-pembayaran', [PesananController::class, 'aksiVerifikasiPembayaran'])->name('pesanan.aksi.verifikasi_pembayaran');
 
     // BRAND
     Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
@@ -101,6 +88,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // PRODUK
     Route::get('/produk', [ProdukController::class, 'index'])->name('produk');
     Route::get('/produk/tambah', [ProdukController::class, 'create'])->name('produk.create');
+    Route::get('/produk/edit/{id}', [ProdukController::class, 'edit'])->name('produk.edit');
     Route::get('/produk/detail/{id}', [ProdukController::class, 'detailView'])->name('product.detail');
     Route::prefix('api/produk')->name('produk.')->group(function () {
         Route::get('/',           [ProdukController::class, 'list'])   ->name('list');
@@ -111,25 +99,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('{produk}', [ProdukController::class, 'destroy'])->name('destroy');
     });
 
-    // SLIDER
-    Route::get('/slider', [SliderController::class, 'index'])->name('slider');
-    Route::prefix('api/slider')->name('slider.')->group(function () {
-        Route::get('/',          [SliderController::class, 'list'])   ->name('list');
-        Route::post('/',         [SliderController::class, 'store'])  ->name('store');
-        Route::get('{slider}',   [SliderController::class, 'show'])   ->name('show');
-        Route::put('{slider}',   [SliderController::class, 'update']) ->name('update');
-        Route::delete('{slider}', [SliderController::class, 'destroy'])->name('destroy');
-    });
 
-    // KUPON
-    Route::get('/kupon', [KuponController::class, 'index'])->name('kupon');
-    Route::prefix('api/kupon')->name('kupon.')->group(function () {
-        Route::get('/',          [KuponController::class, 'list'])   ->name('list');
-        Route::post('/',         [KuponController::class, 'store'])  ->name('store');
-        Route::get('{kupon}',    [KuponController::class, 'show'])   ->name('show');
-        Route::put('{kupon}',    [KuponController::class, 'update']) ->name('update');
-        Route::delete('{kupon}', [KuponController::class, 'destroy'])->name('destroy');
-    });
 
     // DATA USER
     Route::get('/users',               [UserController::class, 'index'])   ->name('users');
@@ -138,24 +108,20 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::delete('/api/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // PLACEHOLDER PAGES
-    Route::view('/wilayah',      'pages.placeholder', ['title' => 'Data Wilayah'])  ->name('wilayah');
+    Route::view('/wilayah',      'placeholder.pages.placeholder', ['title' => 'Data Wilayah'])  ->name('wilayah');
     Route::get('/pembatalan',    [PesananController::class, 'dibatalkan'])->name('pembatalan');
     Route::get('/pengembalian', [PesananController::class, 'pengembalian'])->name('pengembalian');
     Route::get('/ulasan', [UlasanController::class, 'index'])->name('ulasan');
     Route::post('/api/ulasan/{id}/status', [UlasanController::class, 'updateStatus'])->name('ulasan.update-status');
     Route::delete('/api/ulasan/{id}', [UlasanController::class, 'destroy'])->name('ulasan.destroy');
     Route::get('/stok', [ProdukController::class, 'stok'])->name('stok');
-    Route::view('/admins',       'pages.placeholder', ['title' => 'Data Admin'])    ->name('admins');
+    Route::view('/admins',       'placeholder.pages.placeholder', ['title' => 'Data Admin'])    ->name('admins');
+    // KELOLA PENGIRIMAN
+    Route::get('/shipping', [App\Http\Controllers\ShippingController::class, 'index'])->name('shipping.index');
+    Route::put('/shipping/{id}', [App\Http\Controllers\ShippingController::class, 'update'])->name('shipping.update');
+
     Route::get('/laporan',           [LaporanController::class, 'index'])->name('laporan');
     Route::get('/api/laporan/chart', [LaporanController::class, 'chart'])->name('laporan.chart');
-});
-
-Route::middleware('auth')->prefix('pelanggan')->name('pelanggan.')->group(function () {
-    Route::get('/dashboard', [PelangganDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/pesanan', [PelangganDashboardController::class, 'pesananSaya'])->name('pesanan');
-    Route::get('/ulasan', [PelangganDashboardController::class, 'ulasanSaya'])->name('ulasan');
-    Route::get('/profil', [PelangganDashboardController::class, 'profil'])->name('profil');
-    Route::get('/alamat', [PelangganDashboardController::class, 'alamat'])->name('alamat');
 });
 
 // SIMULASI PESANAN
@@ -206,6 +172,18 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])
         ->middleware('auth')
         ->name('checkout');
+    Route::post('/pembeli/profil', [FrontController::class, 'updateProfile'])
+        ->middleware('auth')
+        ->name('pembeli.profil');
+    Route::post('/wishlist/toggle', [FrontController::class, 'toggleWishlist'])
+        ->middleware('auth')
+        ->name('wishlist.toggle');
+    Route::get('/wishlist', [FrontController::class, 'getWishlist'])
+        ->middleware('auth')
+        ->name('wishlist.get');
+    Route::post('/pesanan/{id}/bukti', [CheckoutController::class, 'uploadBukti'])
+        ->middleware('auth')
+        ->name('pesanan.bukti');
 });
 
 // MIDTRANS PAYMENT GATEWAY

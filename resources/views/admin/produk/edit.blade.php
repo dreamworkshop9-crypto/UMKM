@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Tambah Produk')
+@section('title', 'Edit Produk')
 
 @section('additional-css')
 <style>
@@ -20,7 +20,7 @@
             <span class="material-symbols-outlined text-emerald-400 text-[22px]">check_circle</span>
             <div>
                 <p class="text-white text-sm font-semibold">Berhasil!</p>
-                <p id="toast-msg" class="text-slate-400 text-xs mt-0.5">Produk berhasil ditambahkan</p>
+                <p id="toast-msg" class="text-slate-400 text-xs mt-0.5">Produk berhasil diperbarui</p>
             </div>
         </div>
     </div>
@@ -30,16 +30,17 @@
         <!-- Title -->
         <div class="flex items-center gap-3 mb-8">
             <div class="w-10 h-10 bg-indigo-500/15 rounded-lg flex items-center justify-center">
-                <span class="material-symbols-outlined text-indigo-400 text-[20px]">add_box</span>
+                <span class="material-symbols-outlined text-indigo-400 text-[20px]">edit_note</span>
             </div>
             <div>
-                <h2 class="text-[20px] font-semibold text-white">Form Produk Baru</h2>
-                <p class="text-[12px] text-slate-500 mt-1">Isi data produk baru dengan lengkap</p>
+                <h2 class="text-[20px] font-semibold text-white">Form Edit Produk</h2>
+                <p class="text-[12px] text-slate-500 mt-1">Ubah data produk dengan lengkap</p>
             </div>
         </div>
 
-        <form id="form-produk" method="POST" action="{{ route('admin.produk.store') }}" enctype="multipart/form-data">
+        <form id="form-produk" method="POST" action="{{ route('admin.produk.update', $produk->id) }}" enctype="multipart/form-data">
             @csrf
+            <input type="hidden" name="_method" value="PUT">
 
             <!-- Baris 1: Nama + Slug -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
@@ -47,7 +48,7 @@
                     <label class="block text-[12px] text-slate-400 uppercase font-bold" for="nama">
                         Nama Produk <span class="text-red-400">*</span>
                     </label>
-                    <input type="text" id="nama" name="name" value="{{ old('name') }}" required
+                    <input type="text" id="nama" name="name" value="{{ old('name', $produk->name) }}" required
                         class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
                         placeholder="Masukkan nama produk"/>
                     @error('name')
@@ -59,8 +60,8 @@
                 </div>
                 <div class="space-y-2">
                     <label class="block text-[12px] text-slate-400 uppercase font-bold">Slug Preview</label>
-                    <div id="slug" class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-slate-500 text-[13px] truncate">{{ old('slug', '-') }}</div>
-                    <input type="hidden" name="slug" id="slug-input" value="{{ old('slug') }}"/>
+                    <div id="slug" class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-slate-500 text-[13px] truncate">{{ old('slug', $produk->slug) }}</div>
+                    <input type="hidden" name="slug" id="slug-input" value="{{ old('slug', $produk->slug) }}"/>
                 </div>
             </div>
 
@@ -74,7 +75,7 @@
                         class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px] appearance-none cursor-pointer">
                         <option value="">Pilih Merek</option>
                         @foreach($brands as $brand)
-                            <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }} class="bg-[#121220]">
+                            <option value="{{ $brand->id }}" {{ old('brand_id', $produk->brand_id) == $brand->id ? 'selected' : '' }} class="bg-[#121220]">
                                 {{ $brand->name }}
                             </option>
                         @endforeach
@@ -94,7 +95,7 @@
                         class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px] appearance-none cursor-pointer">
                         <option value="">Pilih Kategori</option>
                         @foreach($kategoris as $kategori)
-                            <option value="{{ $kategori->id }}" {{ old('kategori_id') == $kategori->id ? 'selected' : '' }} class="bg-[#121220]">
+                            <option value="{{ $kategori->id }}" {{ old('kategori_id', $produk->kategori_id) == $kategori->id ? 'selected' : '' }} class="bg-[#121220]">
                                 {{ $kategori->name }}
                             </option>
                         @endforeach
@@ -114,7 +115,7 @@
                     <label class="block text-[12px] text-slate-400 uppercase font-bold" for="price">
                         Harga (Rp) <span class="text-red-400">*</span>
                     </label>
-                    <input type="number" name="price" value="{{ old('price') }}" required min="0"
+                    <input type="number" name="price" value="{{ old('price', $produk->price) }}" required min="0"
                         class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
                         placeholder="0"/>
                     @error('price')
@@ -128,7 +129,7 @@
                     <label class="block text-[12px] text-slate-400 uppercase font-bold" for="stock">
                         Stok <span class="text-red-400">*</span>
                     </label>
-                    <input type="number" name="stock" value="{{ old('stock') }}" required min="0"
+                    <input type="number" name="stock" value="{{ old('stock', $produk->stock) }}" required min="0"
                         class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
                         placeholder="0"/>
                     @error('stock')
@@ -152,7 +153,7 @@
                     </button>
                 </div>
                 <div id="size-list" class="flex flex-wrap gap-2">
-                    @foreach(old('sizes', ['']) as $size)
+                    @foreach(old('sizes', $produk->sizes ?? ['']) as $size)
                         <div class="flex items-center gap-2">
                             <input type="text" name="sizes[]" value="{{ $size }}" required
                                 class="bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
@@ -183,7 +184,7 @@
                     </button>
                 </div>
                 <div id="color-list" class="flex flex-wrap gap-2">
-                    @foreach(old('colors', ['']) as $color)
+                    @foreach(old('colors', $produk->colors ?? ['']) as $color)
                         <div class="flex items-center gap-2">
                             <input type="text" name="colors[]" value="{{ $color }}" required
                                 class="bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px]"
@@ -205,18 +206,19 @@
             <!-- Gambar -->
             <div class="mb-5 space-y-2">
                 <label class="block text-[12px] text-slate-400 uppercase font-bold" for="image">
-                    Gambar Produk <span class="text-red-400">*</span>
+                    Gambar Produk <span class="text-slate-500 font-normal">(Opsional, biarkan kosong jika tidak diganti)</span>
                 </label>
                 <div class="relative flex items-center bg-[#121220] border border-outline-variant/30 rounded-lg overflow-hidden">
                     <label class="cursor-pointer bg-[#2a2a40] text-slate-300 px-5 py-3 text-[12px] font-medium hover:bg-[#333350] transition-colors border-r border-outline-variant/30 shrink-0" for="image">
                         Telusuri...
                     </label>
                     <span class="px-4 text-slate-500 text-[12px] truncate flex-1" id="gambar-name-display">Tidak ada berkas dipilih</span>
-                    <input accept="image/*" class="hidden" id="image" name="image" required type="file" onchange="previewImg(this)"/>
+                    <input accept="image/*" class="hidden" id="image" name="image" type="file" onchange="previewImg(this)"/>
                 </div>
-                <div id="gambar-preview" class="hidden mt-3">
+                <div id="gambar-preview" class="mt-3 {{ $produk->image ? '' : 'hidden' }}">
                     <div class="bg-[#121220] rounded-xl p-2 border border-outline-variant/20 inline-block w-fit">
-                        <img id="gambar-preview-img" class="max-h-[180px] rounded-lg object-contain" src="" alt="Preview"/>
+                        <img id="gambar-preview-img" class="max-h-[180px] rounded-lg object-contain" 
+                            src="{{ $produk->image ? Storage::url($produk->image) : '' }}" alt="Preview"/>
                     </div>
                 </div>
                 @error('image')
@@ -234,7 +236,7 @@
                 </label>
                 <textarea name="description" rows="4"
                     class="w-full bg-[#121220] border border-outline-variant/30 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none text-[13px] resize-none"
-                    placeholder="Tulis deskripsi produk...">{{ old('description') }}</textarea>
+                    placeholder="Tulis deskripsi produk...">{{ old('description', $produk->description) }}</textarea>
                 @error('description')
                     <p class="text-red-400 text-[11px] flex items-center gap-1">
                         <span class="material-symbols-outlined text-[13px]">error</span>
@@ -252,7 +254,7 @@
                 <button type="submit" id="btn-submit"
                     class="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[13px] font-semibold transition-colors shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
                     <span class="material-symbols-outlined text-[18px]" id="btn-icon">save</span>
-                    <span id="btn-text">Simpan Produk</span>
+                    <span id="btn-text">Simpan Perubahan</span>
                     <svg id="btn-spinner" class="animate-spin h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -317,7 +319,13 @@ function previewImg(input) {
         display.textContent = 'Tidak ada berkas dipilih';
         display.classList.add('text-slate-500');
         display.classList.remove('text-slate-200');
-        preview.classList.add('hidden');
+        // fallback to original if exists, otherwise hide
+        @if($produk->image)
+            previewImg.src = "{{ Storage::url($produk->image) }}";
+            preview.classList.remove('hidden');
+        @else
+            preview.classList.add('hidden');
+        @endif
     }
 }
 
@@ -339,7 +347,7 @@ document.getElementById('form-produk').addEventListener('submit', function(e) {
     const formData = new FormData(this);
 
     fetch(this.action, {
-        method: 'POST',
+        method: 'POST', // POST with _method=PUT is safe for file uploads in Laravel
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -358,7 +366,7 @@ document.getElementById('form-produk').addEventListener('submit', function(e) {
         toast.style.animation = 'slideIn 0.3s ease-out';
 
         setTimeout(() => {
-            window.location.href = data.redirect || '{{ route("admin.produk") }}';
+            window.location.href = '{{ route("admin.produk") }}';
         }, 1500);
     })
     .catch(err => {
@@ -383,7 +391,7 @@ document.getElementById('form-produk').addEventListener('submit', function(e) {
 
         btn.disabled = false;
         btn.classList.remove('opacity-70', 'cursor-not-allowed');
-        btnText.textContent = 'Simpan Produk';
+        btnText.textContent = 'Simpan Perubahan';
         btnIcon.classList.remove('hidden');
         btnSpinner.classList.add('hidden');
     });

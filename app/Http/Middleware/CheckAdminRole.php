@@ -19,7 +19,7 @@ class CheckAdminRole
             // Arahkan sesuai role
             switch ($role) {
                 case 'pelanggan':
-                    return redirect()->route('pelanggan.dashboard');
+                    return redirect()->route('shop');
                 case 'penjual':
                 case 'pembeli':
                 default:

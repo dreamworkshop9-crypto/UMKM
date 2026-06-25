@@ -26,6 +26,8 @@ class Pesanan extends Model
         'invoice',
         'total',
         'payment_method',
+        'payment_proof',
+        'unique_code',
         'payment_status',
         'status',
         'notes',
@@ -48,7 +50,7 @@ class Pesanan extends Model
     // Relasi ke detail pesanan
     public function items()
     {
-        return $this->hasMany(PesananDetail::class, 'pesanan_id');
+        return $this->hasMany(OrderItem::class, 'order_id');
     }
 
     // Scope: filter berdasarkan status
